@@ -7,8 +7,12 @@ import 'struct/settings.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Khởi tạo Singleton Database toàn cục theo đúng nguyên lý Cashew
-  await initGlobalDatabase();
+  try {
+    // Khởi tạo Singleton Database toàn cục theo đúng nguyên lý Cashew
+    await initGlobalDatabase();
+  } catch (e, stack) {
+    debugPrint('Lỗi khởi tạo cơ sở dữ liệu: $e\n$stack');
+  }
 
   runApp(const StudyDocApp());
 }

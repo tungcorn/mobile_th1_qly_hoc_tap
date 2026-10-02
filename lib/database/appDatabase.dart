@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import '../struct/documentModels.dart';
 import 'initializeDefaultDatabase.dart';
 import 'tables.dart';
@@ -33,7 +34,9 @@ class AppDatabase {
   Future<void> initDatabase({String? inMemoryPath}) async {
     if (_db != null && _db!.isOpen) return;
 
-    if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+    if (kIsWeb) {
+      databaseFactory = databaseFactoryFfiWeb;
+    } else if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       sqfliteFfiInit();
       databaseFactory = databaseFactoryFfi;
     }
@@ -41,6 +44,8 @@ class AppDatabase {
     String path;
     if (inMemoryPath != null) {
       path = inMemoryPath;
+    } else if (kIsWeb) {
+      path = 'study_doc_database.db';
     } else {
       final docDir = await getApplicationDocumentsDirectory();
       path = p.join(docDir.path, 'study_doc_database.db');
