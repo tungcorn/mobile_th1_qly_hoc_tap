@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../struct/documentModels.dart';
 
 /// [SearchFilterBar]: Thanh tìm kiếm kết hợp dải lọc tinh gọn, chuẩn Material Design 3.
-/// Gom toàn bộ bộ lọc Môn học và Loại tài liệu vào một hàng duy nhất, loại bỏ tình trạng rối mắt.
+/// Tối ưu hóa thị giác: Ô tìm kiếm dạng Pill mềm mại không viền cứng, dải chip tonal dịu mắt.
 class SearchFilterBar extends StatelessWidget {
   final TextEditingController searchController;
   final ValueChanged<String> onSearchChanged;
@@ -43,25 +43,21 @@ class SearchFilterBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Ô tìm kiếm tối giản (Clean Search Bar)
+        // 1. Ô tìm kiếm dạng Pill mềm mại (M3 SearchBar Standard)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Container(
-            height: 44,
+            height: 46,
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: theme.colorScheme.outlineVariant.withOpacity(0.8),
-                width: 1,
-              ),
+              color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.55),
+              borderRadius: BorderRadius.circular(24),
             ),
             child: TextField(
               controller: searchController,
               onChanged: onSearchChanged,
               style: const TextStyle(fontSize: 13.5),
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 hintText: 'Tìm kiếm bài giảng, bài tập, ghi chú...',
                 hintStyle: TextStyle(
                   color: theme.colorScheme.onSurface.withOpacity(0.45),
@@ -69,7 +65,7 @@ class SearchFilterBar extends StatelessWidget {
                 ),
                 prefixIcon: Icon(
                   Icons.search_rounded,
-                  size: 19,
+                  size: 20,
                   color: theme.colorScheme.onSurface.withOpacity(0.5),
                 ),
                 suffixIcon: searchController.text.isNotEmpty
@@ -87,12 +83,12 @@ class SearchFilterBar extends StatelessWidget {
           ),
         ),
 
-        // 2. Dải lọc một hàng thống nhất (Unified Filter Strip)
+        // 2. Dải lọc một hàng thống nhất với phong cách Tonal Tints
         SizedBox(
-          height: 36,
+          height: 38,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
             children: [
               // Chip Chọn Môn học (Dropdown PopupMenu)
               Padding(
@@ -137,16 +133,16 @@ class SearchFilterBar extends StatelessWidget {
                     ];
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: BoxDecoration(
                       color: selectedSubjectId != null
-                          ? theme.colorScheme.primaryContainer.withOpacity(0.6)
+                          ? theme.colorScheme.primaryContainer.withOpacity(0.7)
                           : theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: selectedSubjectId != null
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.outlineVariant,
+                            ? theme.colorScheme.primary.withOpacity(0.3)
+                            : theme.colorScheme.outlineVariant.withOpacity(0.7),
                         width: 1,
                       ),
                     ),
@@ -197,7 +193,7 @@ class SearchFilterBar extends StatelessWidget {
                 ),
               ),
 
-              // Chip "Tất cả"
+              // Chip "Tất cả" dạng Tonal thanh nhã
               _buildTypeChip(
                 context: context,
                 label: 'Tất cả',
@@ -240,12 +236,16 @@ class SearchFilterBar extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           decoration: BoxDecoration(
-            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
+            color: isSelected
+                ? theme.colorScheme.primaryContainer.withOpacity(0.7)
+                : theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outlineVariant,
+              color: isSelected
+                  ? theme.colorScheme.primary.withOpacity(0.3)
+                  : theme.colorScheme.outlineVariant.withOpacity(0.7),
               width: 1,
             ),
           ),
@@ -256,7 +256,7 @@ class SearchFilterBar extends StatelessWidget {
                 Icon(
                   icon,
                   size: 12,
-                  color: isSelected ? theme.colorScheme.onPrimary : iconColor,
+                  color: isSelected ? theme.colorScheme.primary : iconColor,
                 ),
                 const SizedBox(width: 4),
               ],
@@ -265,7 +265,9 @@ class SearchFilterBar extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.8),
+                  color: isSelected
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurface.withOpacity(0.8),
                 ),
               ),
             ],

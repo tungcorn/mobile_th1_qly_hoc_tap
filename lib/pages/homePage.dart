@@ -134,13 +134,17 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: theme.colorScheme.primaryContainer,
+        foregroundColor: theme.colorScheme.onPrimaryContainer,
+        elevation: 2,
+        highlightElevation: 4,
         onPressed: () async {
           await Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const AddEditDocumentPage()),
           );
         },
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Thêm tài liệu', style: TextStyle(fontWeight: FontWeight.w600)),
+        icon: const Icon(Icons.add_rounded, size: 20),
+        label: const Text('Thêm tài liệu', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
       ),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -305,7 +309,7 @@ class _HomePageState extends State<HomePage> {
               valueListenable: AppSettings.isCompactViewNotifier,
               builder: (context, isCompact, _) {
                 return ListView.builder(
-                  padding: const EdgeInsets.only(top: 8, bottom: 88),
+                  padding: const EdgeInsets.only(top: 6, bottom: 100),
                   itemCount: items.length,
                   itemBuilder: (context, index) {
                     final item = items[index];
