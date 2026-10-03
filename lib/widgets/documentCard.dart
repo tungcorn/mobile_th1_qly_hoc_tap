@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import '../colors.dart';
 import '../functions.dart';
 import '../struct/documentModels.dart';
-import 'subjectBadge.dart';
-import 'typeBadge.dart';
 
-/// [DocumentCard]: Thẻ hiển thị tài liệu học tập theo chuẩn Material Design 3,
-/// hỗ trợ 2 chế độ hiển thị: Thẻ chi tiết (Standard Card) và Dòng thu gọn (Compact Item).
+/// [DocumentCard]: Thẻ hiển thị tài liệu học tập theo chuẩn Material Design 3 tối giản,
+/// tập trung vào khả năng đọc (Readability), loại bỏ các nút thừa gây rối mắt.
 class DocumentCard extends StatelessWidget {
   final DocumentWithSubject item;
   final bool isCompact;
@@ -35,7 +33,7 @@ class DocumentCard extends StatelessWidget {
     return _buildStandardCard(context);
   }
 
-  /// 1. Giao diện Thẻ Chuẩn (Standard Card View)
+  /// 1. Giao diện Thẻ Chuẩn Tinh Gọn (Standard Card View)
   Widget _buildStandardCard(BuildContext context) {
     final theme = Theme.of(context);
     final doc = item.document;
@@ -43,151 +41,199 @@ class DocumentCard extends StatelessWidget {
         ? AppFunctions.getDeadlineStatus(doc.deadline, isCompleted: doc.isCompleted)
         : null;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withOpacity(0.7),
+          width: 1,
+        ),
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Hàng 1: Môn học + Phân loại + Nút Yêu thích
+              // Hàng 1: Môn học • Phân loại  +  Nút Yêu thích & Menu (...)
               Row(
                 children: [
-                  SubjectBadge(
-                    name: item.subjectName,
-                    code: item.subjectCode,
-                    color: item.subjectColor,
+                  // Dấu chấm màu môn học
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: item.subjectColor,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                   const SizedBox(width: 6),
-                  TypeBadge(type: item.type, isSmall: true),
+
+                  // Tên / Mã môn học
+                  Flexible(
+                    child: Text(
+                      item.subjectCode.isNotEmpty ? item.subjectCode : item.subjectName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface.withOpacity(0.75),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '•',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: theme.colorScheme.onSurface.withOpacity(0.4),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+
+                  // Huy hiệu loại tài liệu dạng tonal tinh tế
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                    decoration: BoxDecoration(
+                      color: item.type.containerColor.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      item.type.displayName,
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: item.type.color,
+                      ),
+                    ),
+                  ),
+
                   const Spacer(),
+
+                  // Nút Đánh dấu quan trọng (Sao)
                   IconButton(
                     icon: Icon(
                       doc.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
-                      size: 22,
-                      color: doc.isFavorite ? AppColors.tertiary : theme.colorScheme.onSurface.withOpacity(0.4),
+                      size: 20,
+                      color: doc.isFavorite
+                          ? AppColors.tertiary
+                          : theme.colorScheme.onSurface.withOpacity(0.35),
                     ),
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                    tooltip: doc.isFavorite ? 'Bỏ đánh dấu quan trọng' : 'Đánh dấu quan trọng',
+                    constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                    tooltip: doc.isFavorite ? 'Bỏ quan trọng' : 'Đánh dấu quan trọng',
                     onPressed: onFavoriteToggle,
                   ),
+
+                  // Menu tùy chọn tác vụ (3 chấm)
+                  _buildPopupMenu(context),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
 
               // Hàng 2: Tiêu đề tài liệu
-              Text(
-                doc.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                  letterSpacing: -0.1,
-                  decoration: doc.isCompleted ? TextDecoration.lineThrough : null,
-                  color: doc.isCompleted
-                      ? theme.colorScheme.onSurface.withOpacity(0.5)
-                      : theme.colorScheme.onSurface,
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Text(
+                  doc.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.5,
+                    height: 1.3,
+                    decoration: doc.isCompleted ? TextDecoration.lineThrough : null,
+                    color: doc.isCompleted
+                        ? theme.colorScheme.onSurface.withOpacity(0.45)
+                        : theme.colorScheme.onSurface,
+                  ),
                 ),
               ),
 
               // Hàng 3: Ghi chú vắn tắt (nếu có)
               if (doc.note.isNotEmpty) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   doc.note,
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12.5,
-                    color: theme.colorScheme.onSurface.withOpacity(0.65),
-                    height: 1.35,
+                    fontSize: 12,
+                    color: theme.colorScheme.onSurface.withOpacity(0.55),
                   ),
                 ),
               ],
 
-              // Hàng 4: Hạn nộp bài tập (Deadline Banner)
-              if (deadlineStatus != null) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: deadlineStatus['containerColor'] as Color,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        doc.isCompleted
-                            ? Icons.check_circle_rounded
-                            : Icons.schedule_rounded,
-                        size: 13,
-                        color: deadlineStatus['color'] as Color,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        '${deadlineStatus['label']} (${AppFunctions.formatDate(doc.deadline)})',
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          color: deadlineStatus['color'] as Color,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 10),
-              const Divider(height: 1),
+              // Hàng 4: Metadata chân thẻ (Deadline, Định dạng tệp, Thời gian cập nhật)
               const SizedBox(height: 8),
-
-              // Hàng 5: Thông tin tệp & Thao tác nhanh
               Row(
                 children: [
-                  // Định dạng tệp
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      doc.fileType.isNotEmpty ? doc.fileType : 'LINK',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  // Nhãn Deadline (nếu có)
+                  if (deadlineStatus != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: (deadlineStatus['containerColor'] as Color).withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            doc.isCompleted
+                                ? Icons.check_circle_outline_rounded
+                                : Icons.schedule_rounded,
+                            size: 12,
+                            color: deadlineStatus['color'] as Color,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            doc.isCompleted
+                                ? 'Đã hoàn thành'
+                                : '${deadlineStatus['label']} (${AppFunctions.formatDate(doc.deadline)})',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: deadlineStatus['color'] as Color,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Dung lượng hoặc loại tệp
-                  Text(
-                    AppFunctions.formatFileSize(doc.fileSize),
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      color: theme.colorScheme.onSurface.withOpacity(0.55),
+                    const SizedBox(width: 8),
+                  ],
+
+                  // Nhãn Định dạng & Dung lượng tệp
+                  if (doc.fileType.isNotEmpty || doc.fileSize > 0) ...[
+                    Text(
+                      doc.fileType.isNotEmpty
+                          ? (doc.fileSize > 0
+                              ? '${doc.fileType} • ${AppFunctions.formatFileSize(doc.fileSize)}'
+                              : doc.fileType)
+                          : AppFunctions.formatFileSize(doc.fileSize),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: theme.colorScheme.onSurface.withOpacity(0.45),
+                      ),
                     ),
-                  ),
+                  ],
+
                   const Spacer(),
-                  // Thời gian cập nhật
+
+                  // Thời gian cập nhật tương đối
                   Text(
                     AppFunctions.formatRelativeTime(doc.dateModified),
                     style: TextStyle(
                       fontSize: 11,
-                      color: theme.colorScheme.onSurface.withOpacity(0.45),
+                      color: theme.colorScheme.onSurface.withOpacity(0.4),
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  // Menu tùy chọn
-                  _buildPopupMenu(context),
                 ],
               ),
             ],
@@ -197,40 +243,44 @@ class DocumentCard extends StatelessWidget {
     );
   }
 
-  /// 2. Giao diện Dòng Thu Gọn (Compact View)
+  /// 2. Giao diện Dòng Thu Gọn Tối Giản (Compact View)
   Widget _buildCompactItem(BuildContext context) {
     final theme = Theme.of(context);
     final doc = item.document;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 2.5),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.colorScheme.outline, width: 1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withOpacity(0.6),
+          width: 1,
+        ),
       ),
       child: ListTile(
         onTap: onTap,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         leading: Container(
-          width: 38,
-          height: 38,
+          width: 32,
+          height: 32,
           decoration: BoxDecoration(
-            color: item.type.containerColor,
-            borderRadius: BorderRadius.circular(10),
+            color: item.type.containerColor.withOpacity(0.7),
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(item.type.icon, color: item.type.color, size: 20),
+          child: Icon(item.type.icon, color: item.type.color, size: 16),
         ),
         title: Text(
           doc.title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 13.5,
             fontWeight: FontWeight.w600,
             decoration: doc.isCompleted ? TextDecoration.lineThrough : null,
             color: doc.isCompleted
-                ? theme.colorScheme.onSurface.withOpacity(0.5)
+                ? theme.colorScheme.onSurface.withOpacity(0.45)
                 : theme.colorScheme.onSurface,
           ),
         ),
@@ -239,8 +289,8 @@ class DocumentCard extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: 11.5,
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            fontSize: 11,
+            color: theme.colorScheme.onSurface.withOpacity(0.5),
           ),
         ),
         trailing: Row(
@@ -249,11 +299,14 @@ class DocumentCard extends StatelessWidget {
             IconButton(
               icon: Icon(
                 doc.isFavorite ? Icons.star_rounded : Icons.star_border_rounded,
-                size: 20,
-                color: doc.isFavorite ? AppColors.tertiary : theme.colorScheme.onSurface.withOpacity(0.4),
+                size: 18,
+                color: doc.isFavorite
+                    ? AppColors.tertiary
+                    : theme.colorScheme.onSurface.withOpacity(0.35),
               ),
+              visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
               onPressed: onFavoriteToggle,
             ),
             _buildPopupMenu(context),
@@ -263,25 +316,24 @@ class DocumentCard extends StatelessWidget {
     );
   }
 
-  /// Menu popup thao tác
+  /// Menu tùy chọn 3 chấm gọn gàng, chứa các tác vụ phụ
   Widget _buildPopupMenu(BuildContext context) {
+    final theme = Theme.of(context);
     final doc = item.document;
+
     return PopupMenuButton<String>(
       icon: Icon(
         Icons.more_vert_rounded,
         size: 18,
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+        color: theme.colorScheme.onSurface.withOpacity(0.5),
       ),
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      tooltip: 'Tùy chọn tác vụ',
       onSelected: (value) {
         switch (value) {
-          case 'view':
-            onTap();
-            break;
-          case 'toggleCompleted':
-            onToggleCompleted?.call();
+          case 'toggle_complete':
+            if (onToggleCompleted != null) onToggleCompleted!();
             break;
           case 'edit':
             onEdit();
@@ -291,53 +343,48 @@ class DocumentCard extends StatelessWidget {
             break;
         }
       },
-      itemBuilder: (ctx) => [
-        const PopupMenuItem(
-          value: 'view',
-          child: Row(
-            children: [
-              Icon(Icons.visibility_outlined, size: 18),
-              SizedBox(width: 8),
-              Text('Xem chi tiết', style: TextStyle(fontSize: 13.5)),
-            ],
-          ),
-        ),
-        if (item.type == DocumentType.assignment)
-          PopupMenuItem(
-            value: 'toggleCompleted',
+      itemBuilder: (context) => [
+        if (doc.type == DocumentType.assignment)
+          PopupMenuItem<String>(
+            value: 'toggle_complete',
             child: Row(
               children: [
                 Icon(
-                  doc.isCompleted ? Icons.restart_alt_rounded : Icons.check_circle_outline_rounded,
+                  doc.isCompleted
+                      ? Icons.radio_button_unchecked_rounded
+                      : Icons.check_circle_outline_rounded,
                   size: 18,
-                  color: doc.isCompleted ? AppColors.secondary : AppColors.success,
+                  color: doc.isCompleted ? AppColors.tertiary : AppColors.success,
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  doc.isCompleted ? 'Đánh dấu chưa nộp' : 'Đánh dấu đã nộp',
-                  style: const TextStyle(fontSize: 13.5),
+                  doc.isCompleted ? 'Đánh dấu chưa nộp' : 'Đánh dấu đã hoàn thành',
+                  style: const TextStyle(fontSize: 13),
                 ),
               ],
             ),
           ),
-        const PopupMenuItem(
+        const PopupMenuItem<String>(
           value: 'edit',
           child: Row(
             children: [
               Icon(Icons.edit_outlined, size: 18),
               SizedBox(width: 8),
-              Text('Chỉnh sửa', style: TextStyle(fontSize: 13.5)),
+              Text('Chỉnh sửa thông tin', style: TextStyle(fontSize: 13)),
             ],
           ),
         ),
         const PopupMenuDivider(height: 1),
-        const PopupMenuItem(
+        const PopupMenuItem<String>(
           value: 'delete',
           child: Row(
             children: [
               Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
               SizedBox(width: 8),
-              Text('Xóa tài liệu', style: TextStyle(fontSize: 13.5, color: AppColors.error)),
+              Text(
+                'Xóa tài liệu',
+                style: TextStyle(fontSize: 13, color: AppColors.error),
+              ),
             ],
           ),
         ),

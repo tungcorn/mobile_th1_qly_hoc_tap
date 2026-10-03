@@ -145,7 +145,7 @@ class _HomePageState extends State<HomePage> {
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
-            // 1. Khối thẻ Thống kê nhanh
+            // 1. Thanh tóm tắt số liệu tối giản (Segmented Metric Bar)
             SliverToBoxAdapter(
               child: StreamBuilder<List<DocumentWithSubject>>(
                 stream: _statsStream,
@@ -154,6 +154,8 @@ class _HomePageState extends State<HomePage> {
                   final stats = DocumentStats.fromDocuments(allDocs);
                   return StatSummaryCards(
                     stats: stats,
+                    isPendingActive: _onlyPending,
+                    isFavoriteActive: _onlyFavorites,
                     onTotalTap: _resetFilters,
                     onPendingTap: () {
                       setState(() {
@@ -175,125 +177,48 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            // 2. Dải chọn Môn học ngang (Horizontal Subject Selector)
+            // 2. Thanh Tìm kiếm kết hợp Dải lọc Môn học & Loại tài liệu thống nhất
             SliverToBoxAdapter(
               child: StreamBuilder<List<SubjectItem>>(
                 stream: _subjectsStream,
                 builder: (context, snapshot) {
                   final subjects = snapshot.data ?? [];
-                  return Container(
-                    height: 40,
-                    margin: const EdgeInsets.only(top: 4, bottom: 4),
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      children: [
-                        // Nút Tất cả môn
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ChoiceChip(
-                            label: const Text('Tất cả môn'),
-                            selected: _selectedSubjectId == null || _selectedSubjectId == 'all',
-                            onSelected: (_) => setState(() {
-                              _selectedSubjectId = null;
-                              _updateDocumentsStream();
-                            }),
-                            selectedColor: theme.colorScheme.primary,
-                            backgroundColor: theme.colorScheme.surface,
-                            labelStyle: TextStyle(
-                              fontSize: 12,
-                              fontWeight: (_selectedSubjectId == null || _selectedSubjectId == 'all')
-                                  ? FontWeight.w600
-                                  : FontWeight.w500,
-                              color: (_selectedSubjectId == null || _selectedSubjectId == 'all')
-                                  ? theme.colorScheme.onPrimary
-                                  : theme.colorScheme.onSurface,
-                            ),
-                            side: BorderSide(
-                              color: (_selectedSubjectId == null || _selectedSubjectId == 'all')
-                                  ? Colors.transparent
-                                  : theme.colorScheme.outline,
-                            ),
-                            visualDensity: VisualDensity.compact,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                        ),
-                        // Danh sách các môn học
-                        ...subjects.map((sub) {
-                          final isSelected = _selectedSubjectId == sub.id;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: ChoiceChip(
-                              label: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      color: sub.color,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text(sub.code.isNotEmpty ? sub.code : sub.name),
-                                ],
-                              ),
-                              selected: isSelected,
-                              onSelected: (_) => setState(() {
-                                _selectedSubjectId = isSelected ? null : sub.id;
-                                _updateDocumentsStream();
-                              }),
-                              selectedColor: theme.colorScheme.primary,
-                              backgroundColor: theme.colorScheme.surface,
-                              labelStyle: TextStyle(
-                                fontSize: 12,
-                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
-                              ),
-                              side: BorderSide(
-                                color: isSelected ? Colors.transparent : theme.colorScheme.outline,
-                              ),
-                              visualDensity: VisualDensity.compact,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
+                  return SearchFilterBar(
+                    searchController: _searchController,
+                    onSearchChanged: (val) {
+                      setState(() {
+                        _searchQuery = val;
+                        _updateDocumentsStream();
+                      });
+                    },
+                    onClearSearch: () {
+                      _searchController.clear();
+                      setState(() {
+                        _searchQuery = '';
+                        _updateDocumentsStream();
+                      });
+                    },
+                    selectedType: _selectedType,
+                    onTypeSelected: (type) {
+                      setState(() {
+                        _selectedType = type;
+                        _updateDocumentsStream();
+                      });
+                    },
+                    subjects: subjects,
+                    selectedSubjectId: _selectedSubjectId,
+                    onSubjectSelected: (subId) {
+                      setState(() {
+                        _selectedSubjectId = subId;
+                        _updateDocumentsStream();
+                      });
+                    },
                   );
                 },
               ),
             ),
 
-            // 3. Thanh Tìm kiếm & Chip lọc Loại tài liệu
-            SliverToBoxAdapter(
-              child: SearchFilterBar(
-                searchController: _searchController,
-                onSearchChanged: (val) {
-                  setState(() {
-                    _searchQuery = val;
-                    _updateDocumentsStream();
-                  });
-                },
-                onClearSearch: () {
-                  _searchController.clear();
-                  setState(() {
-                    _searchQuery = '';
-                    _updateDocumentsStream();
-                  });
-                },
-                selectedType: _selectedType,
-                onTypeSelected: (type) {
-                  setState(() {
-                    _selectedType = type;
-                    _updateDocumentsStream();
-                  });
-                },
-              ),
-            ),
-
-            // 4. Chỉ báo bộ lọc đang kích hoạt (nếu có)
+            // 3. Chỉ báo bộ lọc đang kích hoạt tinh gọn (nếu có)
             if (_onlyFavorites || _onlyPending)
               SliverToBoxAdapter(
                 child: Padding(
@@ -301,23 +226,23 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(20),
+                          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.7),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              _onlyFavorites ? Icons.star_rounded : Icons.alarm_rounded,
-                              size: 14,
-                              color: _onlyFavorites ? AppColors.tertiary : AppColors.primary,
+                              _onlyFavorites ? Icons.star_rounded : Icons.schedule_rounded,
+                              size: 13,
+                              color: _onlyFavorites ? AppColors.tertiary : theme.colorScheme.primary,
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _onlyFavorites ? 'Đang lọc: Quan trọng' : 'Đang lọc: Bài tập chưa hoàn thành',
-                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+                              _onlyFavorites ? 'Chỉ xem tài liệu Quan trọng' : 'Chỉ xem Bài tập chưa hoàn thành',
+                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500),
                             ),
                             const SizedBox(width: 6),
                             GestureDetector(
@@ -328,7 +253,11 @@ class _HomePageState extends State<HomePage> {
                                   _updateDocumentsStream();
                                 });
                               },
-                              child: const Icon(Icons.close_rounded, size: 14),
+                              child: Icon(
+                                Icons.close_rounded,
+                                size: 14,
+                                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                              ),
                             ),
                           ],
                         ),
