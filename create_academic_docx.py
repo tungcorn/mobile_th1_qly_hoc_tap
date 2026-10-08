@@ -178,7 +178,7 @@ def build_docx_report():
         ("Mục 2", "Thiết lập cấu trúc thư mục & phân lớp chuẩn kiến trúc Cashew", "Tổ chức 5 tầng độc lập: lib/database/ (Data Layer), lib/struct/ (Business/State Layer), lib/pages/ (View Layer), lib/widgets/ (Component Layer), tiện ích dùng chung.", "Đạt"),
         ("Mục 3", "Triển khai các chức năng cốt lõi: Thêm, sửa, xóa, tìm kiếm", "Hoàn thành CRUD tài liệu, chọn deadline bài tập, tìm kiếm full-text đa trường, bộ lọc kết hợp (Môn học, Loại tài liệu, Yêu thích, Bài tập chờ).", "Đạt"),
         ("Mục 4", "Kiểm thử tính đúng đắn của việc phân tách logic giữa các lớp", "Xây dựng 12 automated test cases trên cả 3 tầng: database_test.dart (6), service_test.dart (5), widget_test.dart (1). Kết quả: 12/12 pass, flutter analyze: 0 lỗi.", "Đạt"),
-        ("Mục 5", "Đóng gói mã nguồn và lập báo cáo giải trình kiến trúc", "Đóng gói mã nguồn sạch TH1_QuanLyTaiLieuHocTap_Cashew.zip (0.85 MB); biên soạn tài liệu giải trình chi tiết về kiến trúc hệ thống.", "Đạt")
+        ("Mục 5", "Đóng gói mã nguồn và lập báo cáo giải trình kiến trúc", "Đóng gói mã nguồn sạch TH1_QuanLyTaiLieuHocTap_Cashew.zip (0.85 MB) và sản phẩm cài đặt Android TH1_Android_Release.apk (55.7 MB, đã ký APK Signature Scheme v2); biên soạn tài liệu giải trình chi tiết về kiến trúc hệ thống.", "Đạt")
     ]
     
     for row_idx, data in enumerate(c_data, start=1):
@@ -353,7 +353,7 @@ def build_docx_report():
     add_academic_note(doc, "Lệnh 'flutter test' đã thực thi thành công toàn bộ 12 test cases với kết quả 'All tests passed!'. Đồng thời lệnh 'flutter analyze' hoàn thành với trạng thái 'No issues found! (0 errors, 0 warnings, 0 lints)', khẳng định mã nguồn đáp ứng đầy đủ tiêu chuẩn Clean Code và không tồn tại lỗi tiềm ẩn.", "Kết quả xác minh chất lượng")
     
     # ------------------ MỤC V ------------------
-    add_heading_1(doc, "MỤC V: ĐÓNG GÓI MÃ NGUỒN VÀ HƯỚNG DẪN TRIỂN KHAI (CHECKLIST 5)")
+    add_heading_1(doc, "MỤC V: ĐÓNG GÓI SẢN PHẨM VÀ HƯỚNG DẪN TRIỂN KHAI (CHECKLIST 5)")
     
     add_heading_2(doc, "5.1. Quy cách đóng gói mã nguồn")
     doc.add_paragraph("Mã nguồn dự án được đóng gói thành tệp nén chính thức:")
@@ -361,8 +361,77 @@ def build_docx_report():
     doc.add_paragraph("• Dung lượng: ~0.85 MB (gồm toàn bộ mã nguồn Dart, cấu hình dự án, test suite và tài liệu báo cáo).")
     doc.add_paragraph("• Tối ưu hóa: Quá trình đóng gói đã chủ động loại trừ các thư mục nhị phân và cache trung gian (build/, .dart_tool/, .gradle/, .idea/, .git/), đảm bảo tệp nén gọn nhẹ và sẵn sàng giải nén thực thi ngay lập tức.")
     
-    add_heading_2(doc, "5.2. Hướng dẫn cài đặt và khởi chạy ứng dụng")
-    doc.add_paragraph("Người chấm hoặc người sử dụng có thể triển khai ứng dụng qua các bước sau:")
+    add_heading_2(doc, "5.2. Đóng gói sản phẩm cài đặt Android (APK)")
+    doc.add_paragraph("Song song với phần mã nguồn, sản phẩm cài đặt dạng tệp APK đã được biên dịch ở chế độ release bằng lệnh:\n"
+                      "\n"
+                      "   flutter build apk --release")
+    doc.add_paragraph("Quá trình biên dịch tạo ra tệp tin build/app/outputs/flutter-apk/app-release.apk và tệp này được đóng gói chính thức thành:")
+    doc.add_paragraph("• Tên tệp tin phân phối: TH1_Android_Release.apk")
+    doc.add_paragraph("• Dung lượng: 55.7 MB (58,393,967 bytes).")
+    doc.add_paragraph("• Định danh ứng dụng: applicationId = com.studydoc.study_doc_manager; versionName = 1.0.0; versionCode = 1.")
+    doc.add_paragraph("• Khả năng tương thích: minSdk = 24 (Android 7.0 trở lên); targetSdk = 35; compileSdk = 36.")
+    doc.add_paragraph("• Kiến trúc CPU đóng gói: arm64-v8a, armeabi-v7a, x86_64 (tương thích cả thiết bị thật và máy ảo).")
+    doc.add_paragraph("• Chữ ký số: Tệp APK đã được ký hợp lệ theo chuẩn APK Signature Scheme v2, xác minh thành công bằng công cụ apksigner.")
+    doc.add_paragraph("• Mã kiểm tra toàn vẹn SHA-256: ed2e06bbf3b230aa2fb17e4e1c7b116920ccc2cc750f469ce62711084e473a4b")
+
+    add_academic_note(doc, "Cấu hình build Android được ghim cố định compileSdk = 36 và ndkVersion = 28.2.13676358 nhằm đáp ứng yêu cầu biên dịch của các plugin native (sqflite_android, sqlite3, jni). Việc khai báo tường minh ndkVersion còn giúp Gradle gọi được công cụ llvm-strip để loại bỏ ký hiệu gỡ lỗi khỏi nhân engine Flutter (libflutter.so), rút gọn dung lượng APK từ 492.6 MB xuống còn 55.7 MB (giảm khoảng 89%) mà không suy giảm bất kỳ chức năng nào.", "Tối ưu dung lượng bản phát hành")
+    add_heading_2(doc, "5.3. Danh mục sản phẩm phát hành (Release assets)")
+    doc.add_paragraph("Toàn bộ sản phẩm được phát hành công khai tại trang GitHub Releases của kho lưu trữ dự án, bao gồm 4 tệp sau:")
+
+    table_rel = doc.add_table(rows=5, cols=3)
+    table_rel.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_academic_table_borders(table_rel)
+
+    rel_headers = ["STT", "Tên tệp phát hành", "Mô tả sản phẩm và dung lượng"]
+    rel_widths = [Inches(0.5), Inches(2.2), Inches(3.9)]
+
+    for i, h in enumerate(rel_headers):
+        cell = table_rel.cell(0, i)
+        cell.width = rel_widths[i]
+        set_cell_background(cell, "F1F5F9")
+        set_cell_margins(cell, top=80, bottom=80, left=100, right=100)
+        p = cell.paragraphs[0]
+        if i == 0:
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p.add_run(h)
+        r.bold = True
+        r.font.size = Pt(9.5)
+        r.font.color.rgb = RGBColor(0x0F, 0x17, 0x2A)
+
+    rel_data = [
+        ("1", "TH1_Android_Release.apk", "Sản phẩm cài đặt Android (APK release đã ký số, đủ 3 kiến trúc CPU). Dung lượng 55.7 MB."),
+        ("2", "TH1_QuanLyTaiLieuHocTap_Cashew.zip", "Mã nguồn Dart/Flutter đầy đủ và sạch, đã loại bỏ cache trung gian. Dung lượng ~0.85 MB."),
+        ("3", "BAO_CAO_TH1_KIEN_TRUC_CASHEW.docx", "Báo cáo kỹ thuật và giải trình kiến trúc Cashew (chính là tài liệu này). Dung lượng ~46 KB."),
+        ("4", "TH1_Web_Release.zip", "Bản phân phối Web đã biên dịch sẵn (build/web), kèm sqlite3.wasm và sqflite_sw.js. Dung lượng 13.8 MB."),
+    ]
+
+    for row_idx, data in enumerate(rel_data, start=1):
+        for col_idx, text in enumerate(data):
+            cell = table_rel.cell(row_idx, col_idx)
+            cell.width = rel_widths[col_idx]
+            set_cell_background(cell, "FFFFFF")
+            set_cell_margins(cell, top=80, bottom=80, left=100, right=100)
+            p = cell.paragraphs[0]
+            if col_idx == 0:
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            r = p.add_run(text)
+            r.font.size = Pt(9.5)
+            if col_idx == 0:
+                r.bold = True
+
+    doc.add_paragraph().paragraph_format.space_after = Pt(10)
+
+    add_heading_2(doc, "5.4. Hướng dẫn cài đặt và khởi chạy ứng dụng")
+    doc.add_paragraph("Người chấm hoặc người sử dụng có thể triển khai ứng dụng theo một trong hai cách sau:")
+
+    doc.add_paragraph("Cách 1 - Cài đặt trực tiếp từ tệp APK (dành cho thiết bị di động Android):")
+    doc.add_paragraph("1. Tải tệp TH1_Android_Release.apk từ trang GitHub Releases của dự án.")
+    doc.add_paragraph("2. Trên thiết bị, bật tùy chọn 'Cho phép cài đặt ứng dụng từ nguồn không xác định'.")
+    doc.add_paragraph("3. Tiến hành cài đặt bằng một trong hai cách:\n"
+                      "   • Kết nối thiết bị qua cáp USB và thực thi dòng lệnh: adb install -r TH1_Android_Release.apk\n"
+                      "   • Hoặc sao chép tệp APK vào thiết bị và mở trực tiếp để hệ thống tiến hành cài đặt.")
+
+    doc.add_paragraph("Cách 2 - Khởi chạy từ mã nguồn (dành cho môi trường phát triển):")
     doc.add_paragraph("1. Giải nén tệp TH1_QuanLyTaiLieuHocTap_Cashew.zip vào thư mục làm việc.")
     doc.add_paragraph("2. Mở cửa sổ dòng lệnh (Terminal/PowerShell) tại thư mục dự án và tải các gói phụ thuộc:\n"
                       "   flutter pub get")
@@ -372,12 +441,13 @@ def build_docx_report():
                       "   • Trình duyệt Web (Google Chrome): flutter run -d chrome\n"
                       "   • Trình duyệt Web (Microsoft Edge): flutter run -d edge\n"
                       "   • Hệ điều hành Windows Desktop: flutter run -d windows\n"
-                      "   • Thiết bị di động / Máy ảo Android: flutter run")
+                      "   • Thiết bị di động / Máy ảo Android: flutter run\n"
+                      "   • Xuất bản lại tệp APK khi cần: flutter build apk --release")
     
     # ------------------ KẾT LUẬN ------------------
     add_heading_1(doc, "KẾT LUẬN")
     doc.add_paragraph("Thông qua bài thực hành TH1, đồ án đã triển khai thành công ứng dụng Quản lý Tài liệu Học tập đáp ứng chặt chẽ các nguyên lý cốt lõi của kiến trúc Cashew. Dự án phân tách độc lập và rõ ràng giữa tầng lưu trữ dữ liệu (Database Layer), tầng logic nghiệp vụ (Struct Layer) và tầng giao diện người dùng (Pages & Widgets Layer).")
-    doc.add_paragraph("Giao diện ứng dụng được thiết kế theo hướng tối giản, trang nhã, loại bỏ các chi tiết thừa thãi và tập trung vào trải nghiệm tra cứu học tập của sinh viên. Toàn bộ 5/5 mục tiêu trong Checklist đánh giá đã được hoàn thành đầy đủ, có minh chứng mã nguồn và kết quả kiểm thử tự động xác nhận.")
+    doc.add_paragraph("Giao diện ứng dụng được thiết kế theo hướng tối giản, trang nhã, loại bỏ các chi tiết thừa thãi và tập trung vào trải nghiệm tra cứu học tập của sinh viên. Toàn bộ 5/5 mục tiêu trong Checklist đánh giá đã được hoàn thành đầy đủ, với minh chứng cụ thể gồm: mã nguồn sạch, kết quả kiểm thử tự động đạt 12/12 test cases và sản phẩm cài đặt Android dạng tệp APK bản release đã được ký số.")
     
     output_path = r"D:\Hoc\Android\TH\th1_qly_hoc_tap\BAO_CAO_TH1_KIEN_TRUC_CASHEW.docx"
     doc.save(output_path)
