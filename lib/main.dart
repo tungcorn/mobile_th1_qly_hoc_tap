@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'cloud/firebaseBootstrap.dart';
 import 'colors.dart';
 import 'pages/homePage.dart';
 import 'struct/databaseGlobal.dart';
@@ -12,6 +13,13 @@ void main() async {
     await initGlobalDatabase();
   } catch (e, stack) {
     debugPrint('Lỗi khởi tạo cơ sở dữ liệu: $e\n$stack');
+  }
+
+  try {
+    await FirebaseBootstrap.initialize();
+  } catch (error, stack) {
+    FirebaseBootstrap.initializationError = error.toString();
+    debugPrint('Lỗi khởi tạo Firebase: $error\n$stack');
   }
 
   runApp(const StudyDocApp());

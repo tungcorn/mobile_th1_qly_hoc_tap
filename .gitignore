@@ -46,3 +46,16 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Local Firebase configuration and emulator state
+firebase_config.json
+firebase_config.android.json
+firebase_web_config.json
+.firebase/
+*-debug.log
+firebase-export-*/
+node_modules/
+
+.playwright-mcp/
+.omo/
+~$*

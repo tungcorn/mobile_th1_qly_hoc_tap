@@ -1,0 +1,12 @@
+STUDYDOC MANAGER - TAI LIEU DEMO CLOUD
+
+Mon hoc: Dien toan dam may
+Chu de: Firebase Authentication, Cloud Firestore, Cloud Storage
+
+1. Google dang nhap va Firebase cap danh tinh UID.
+2. Noi dung tep duoc tai len Cloud Storage trong thu muc rieng cua UID.
+3. Tieu de, mon hoc, ghi chu va storagePath duoc luu vao Firestore.
+4. Tai lai trang van thay tai lieu cua cung tai khoan.
+5. Tai khoan khac khong duoc doc, sua, xoa tai lieu nay.
+
+Tep nay chi chua du lieu mau, khong chua thong tin ca nhan.

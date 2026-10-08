@@ -9,7 +9,9 @@ import '../widgets/documentCard.dart';
 import '../widgets/emptyStateView.dart';
 import '../widgets/searchFilterBar.dart';
 import '../widgets/statSummaryCards.dart';
+import '../widgets/cloudUi.dart';
 import 'addEditDocumentPage.dart';
+import 'cloudDocumentsPage.dart';
 import 'documentDetailPage.dart';
 import 'subjectsPage.dart';
 
@@ -71,9 +73,22 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _openCloud() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const CloudDocumentsPage()),
+    );
+  }
+
+  void _openSubjects() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const SubjectsManagementPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isNarrow = MediaQuery.sizeOf(context).width < CloudUi.compactBreakpoint;
 
     return Scaffold(
       appBar: AppBar(
@@ -82,10 +97,14 @@ class _HomePageState extends State<HomePage> {
           children: [
             const Text(
               'Quản lý Tài liệu Học tập',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
             ),
             Text(
               'Kiến trúc Cashew • Material Design 3',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w400,
@@ -94,7 +113,61 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
+        bottom: isNarrow
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(CloudUi.controlHeight),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: CloudUi.standard),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: _openCloud,
+                      icon: const Icon(Icons.cloud_outlined),
+                      label: const Text('Kho Cloud'),
+                    ),
+                  ),
+                ),
+              )
+            : null,
         actions: [
+          if (isNarrow)
+            PopupMenuButton<String>(
+              tooltip: 'Tùy chọn giao diện và môn học',
+              onSelected: (action) {
+                switch (action) {
+                  case 'view':
+                    AppSettings.toggleViewMode();
+                  case 'theme':
+                    AppSettings.toggleTheme();
+                  case 'subjects':
+                    _openSubjects();
+                }
+              },
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: 'view',
+                  child: Text(AppSettings.isCompactViewNotifier.value
+                      ? 'Chế độ thẻ chi tiết'
+                      : 'Chế độ dòng thu gọn'),
+                ),
+                PopupMenuItem(
+                  value: 'theme',
+                  child: Text(AppSettings.themeModeNotifier.value == ThemeMode.dark
+                      ? 'Chuyển sang giao diện Sáng'
+                      : 'Chuyển sang giao diện Tối'),
+                ),
+                const PopupMenuItem(
+                  value: 'subjects',
+                  child: Text('Quản lý Môn học'),
+                ),
+              ],
+            ),
+          if (!isNarrow) ...[
+          TextButton.icon(
+            onPressed: _openCloud,
+            icon: const Icon(Icons.cloud_outlined),
+            label: const Text('Kho Cloud'),
+          ),
           // Nút chuyển chế độ xem (Card / Compact)
           ValueListenableBuilder<bool>(
             valueListenable: AppSettings.isCompactViewNotifier,
@@ -125,12 +198,9 @@ class _HomePageState extends State<HomePage> {
           IconButton(
             icon: const Icon(Icons.school_outlined, size: 21),
             tooltip: 'Quản lý Môn học',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SubjectsManagementPage()),
-              );
-            },
+            onPressed: _openSubjects,
           ),
+          ],
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
