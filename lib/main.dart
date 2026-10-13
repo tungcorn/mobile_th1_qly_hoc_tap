@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'cloud/firebaseBootstrap.dart';
+import 'cloud/supabaseBootstrap.dart';
 import 'colors.dart';
 import 'pages/homePage.dart';
 import 'struct/databaseGlobal.dart';
@@ -20,6 +21,13 @@ void main() async {
   } catch (error, stack) {
     FirebaseBootstrap.initializationError = error.toString();
     debugPrint('Lỗi khởi tạo Firebase: $error\n$stack');
+  }
+
+  try {
+    await SupabaseBootstrap.initialize();
+  } catch (error, stack) {
+    SupabaseBootstrap.initializationError = error.toString();
+    debugPrint('Lỗi khởi tạo Supabase: $error\n$stack');
   }
 
   runApp(const StudyDocApp());

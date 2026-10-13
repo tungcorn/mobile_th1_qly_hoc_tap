@@ -11,9 +11,9 @@ import '../widgets/searchFilterBar.dart';
 import '../widgets/statSummaryCards.dart';
 import '../widgets/cloudUi.dart';
 import 'addEditDocumentPage.dart';
-import 'cloudDocumentsPage.dart';
 import 'documentDetailPage.dart';
 import 'subjectsPage.dart';
+import 'supabaseDocumentsPage.dart';
 
 /// [HomePage]: Màn hình chính của ứng dụng Quản lý Tài liệu Học tập theo kiến trúc Cashew.
 /// Giao diện Material 3 trang nhã, phân tách lớp hoàn chỉnh, cập nhật dữ liệu Reactive tức thời.
@@ -75,7 +75,7 @@ class _HomePageState extends State<HomePage> {
 
   void _openCloud() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const CloudDocumentsPage()),
+      MaterialPageRoute(builder: (_) => const SupabaseDocumentsPage()),
     );
   }
 
