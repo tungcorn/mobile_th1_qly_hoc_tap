@@ -123,7 +123,7 @@ class _HomePageState extends State<HomePage> {
                     child: TextButton.icon(
                       onPressed: _openCloud,
                       icon: const Icon(Icons.cloud_outlined),
-                      label: const Text('Kho Cloud'),
+                      label: const Text('Thư viện Cloud (TH2)'),
                     ),
                   ),
                 ),
@@ -166,7 +166,7 @@ class _HomePageState extends State<HomePage> {
           TextButton.icon(
             onPressed: _openCloud,
             icon: const Icon(Icons.cloud_outlined),
-            label: const Text('Kho Cloud'),
+            label: const Text('Thư viện Cloud (TH2)'),
           ),
           // Nút chuyển chế độ xem (Card / Compact)
           ValueListenableBuilder<bool>(

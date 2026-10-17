@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'cloud/firebaseBootstrap.dart';
+import 'cloud/notificationService.dart';
 import 'cloud/supabaseBootstrap.dart';
 import 'colors.dart';
 import 'pages/homePage.dart';
@@ -21,6 +22,12 @@ void main() async {
   } catch (error, stack) {
     FirebaseBootstrap.initializationError = error.toString();
     debugPrint('Lỗi khởi tạo Firebase: $error\n$stack');
+  }
+
+  try {
+    await NotificationService.initialize();
+  } catch (error, stack) {
+    debugPrint('Lỗi khởi tạo thông báo: $error\n$stack');
   }
 
   try {

@@ -1,0 +1,415 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1792197766203,
+  "projectRoot": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": ">=22",
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "npm",
+    "runtime": "Node.js 22"
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {
+      "emulators": "firebase emulators:start --project demo-studydoc --only auth,firestore,storage",
+      "test:rules": "firebase emulators:exec --project demo-studydoc --only firestore,storage \"node --test test/firebase_rules.test.cjs\"",
+      "slides": "node scripts/create_firebase_slides.cjs"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "lib",
+      "scripts",
+      "test"
+    ],
+    "gitBranches": {
+      "defaultBranch": "master",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "android": {
+      "path": "android",
+      "purpose": null,
+      "fileCount": 4,
+      "lastAccessed": 1792197766142,
+      "keyFiles": [
+        "build.gradle.kts",
+        "gradle.properties",
+        "settings.gradle.kts"
+      ]
+    },
+    "demo_samples": {
+      "path": "demo_samples",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1792197766143,
+      "keyFiles": [
+        "tai_lieu_demo.txt"
+      ]
+    },
+    "ios": {
+      "path": "ios",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1792197766143,
+      "keyFiles": []
+    },
+    "lib": {
+      "path": "lib",
+      "purpose": "Library code",
+      "fileCount": 3,
+      "lastAccessed": 1792197766144,
+      "keyFiles": [
+        "colors.dart",
+        "functions.dart",
+        "main.dart"
+      ]
+    },
+    "linux": {
+      "path": "linux",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1792197766144,
+      "keyFiles": [
+        "CMakeLists.txt"
+      ]
+    },
+    "macos": {
+      "path": "macos",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1792197766145,
+      "keyFiles": []
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 2,
+      "lastAccessed": 1792197766145,
+      "keyFiles": [
+        "configure_firebase.ps1",
+        "create_firebase_slides.cjs"
+      ]
+    },
+    "test": {
+      "path": "test",
+      "purpose": "Test files",
+      "fileCount": 5,
+      "lastAccessed": 1792197766145,
+      "keyFiles": [
+        "cloud_policy_test.dart",
+        "database_test.dart",
+        "firebase_rules.test.cjs",
+        "service_test.dart",
+        "widget_test.dart"
+      ]
+    },
+    "web": {
+      "path": "web",
+      "purpose": null,
+      "fileCount": 5,
+      "lastAccessed": 1792197766146,
+      "keyFiles": [
+        "favicon.png",
+        "index.html",
+        "manifest.json",
+        "sqflite_sw.js",
+        "sqlite3.wasm"
+      ]
+    },
+    "windows": {
+      "path": "windows",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1792197766146,
+      "keyFiles": [
+        "CMakeLists.txt"
+      ]
+    },
+    "android\\app": {
+      "path": "android\\app",
+      "purpose": "Application code",
+      "fileCount": 1,
+      "lastAccessed": 1792197766147,
+      "keyFiles": [
+        "build.gradle.kts"
+      ]
+    },
+    "lib\\pages": {
+      "path": "lib\\pages",
+      "purpose": "Page components",
+      "fileCount": 7,
+      "lastAccessed": 1792197766147,
+      "keyFiles": [
+        "addEditDocumentPage.dart",
+        "cloudDocumentFormPage.dart",
+        "cloudDocumentsPage.dart"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "lib/pages/supabaseDocumentsPage.dart",
+      "accessCount": 25,
+      "lastAccessed": 1792199673482,
+      "type": "directory"
+    },
+    {
+      "path": "lib/main.dart",
+      "accessCount": 4,
+      "lastAccessed": 1792198175389,
+      "type": "directory"
+    },
+    {
+      "path": "lib/cloud/supabaseDocumentService.dart",
+      "accessCount": 4,
+      "lastAccessed": 1792198477196,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 3,
+      "lastAccessed": 1792197887928,
+      "type": "directory"
+    },
+    {
+      "path": "lib/cloud/supabaseBootstrap.dart",
+      "accessCount": 3,
+      "lastAccessed": 1792198235101,
+      "type": "file"
+    },
+    {
+      "path": "supabase/th2_migration.sql",
+      "accessCount": 3,
+      "lastAccessed": 1792198470362,
+      "type": "file"
+    },
+    {
+      "path": "BAO_CAO_TH2_QUAN_LY_TAI_LIEU_DA_NEN_TANG.md",
+      "accessCount": 3,
+      "lastAccessed": 1792198576804,
+      "type": "file"
+    },
+    {
+      "path": "test/supabase_documents_page_test.dart",
+      "accessCount": 3,
+      "lastAccessed": 1792199688545,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/wide-ban_do.png",
+      "accessCount": 3,
+      "lastAccessed": 1792199908695,
+      "type": "file"
+    },
+    {
+      "path": "lib/cloud/recommendationEngine.dart",
+      "accessCount": 2,
+      "lastAccessed": 1792198470666,
+      "type": "file"
+    },
+    {
+      "path": "lib/cloud/notificationService.dart",
+      "accessCount": 2,
+      "lastAccessed": 1792198471124,
+      "type": "file"
+    },
+    {
+      "path": "supabase/functions/send-fcm/index.ts",
+      "accessCount": 2,
+      "lastAccessed": 1792198471506,
+      "type": "file"
+    },
+    {
+      "path": "test/recommendation_test.dart",
+      "accessCount": 2,
+      "lastAccessed": 1792198472121,
+      "type": "file"
+    },
+    {
+      "path": "lib/widgets/tagInput.dart",
+      "accessCount": 2,
+      "lastAccessed": 1792198477046,
+      "type": "file"
+    },
+    {
+      "path": "lib/pages/locationPickerPage.dart",
+      "accessCount": 2,
+      "lastAccessed": 1792198477510,
+      "type": "file"
+    },
+    {
+      "path": "lib/widgets/documentMapView.dart",
+      "accessCount": 2,
+      "lastAccessed": 1792198477845,
+      "type": "file"
+    },
+    {
+      "path": "lib/widgets/cloudDocumentDetailSheet.dart",
+      "accessCount": 2,
+      "lastAccessed": 1792198522684,
+      "type": "file"
+    },
+    {
+      "path": "lib/pages/discoverView.dart",
+      "accessCount": 2,
+      "lastAccessed": 1792198581600,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/wide-muon_tra.png",
+      "accessCount": 2,
+      "lastAccessed": 1792199402974,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/narrow-kham_pha.png",
+      "accessCount": 2,
+      "lastAccessed": 1792199488788,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/narrow-tai_lieu.png",
+      "accessCount": 2,
+      "lastAccessed": 1792199908295,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/release-wide-tai_lieu.png",
+      "accessCount": 2,
+      "lastAccessed": 1792200049943,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/narrow-ban_do.png",
+      "accessCount": 2,
+      "lastAccessed": 1792200050394,
+      "type": "file"
+    },
+    {
+      "path": "lib/cloud/firebaseBootstrap.dart",
+      "accessCount": 1,
+      "lastAccessed": 1792198144762,
+      "type": "file"
+    },
+    {
+      "path": "web/firebase-messaging-sw.js",
+      "accessCount": 1,
+      "lastAccessed": 1792198164822,
+      "type": "file"
+    },
+    {
+      "path": "KICH_BAN_QUAY_VIDEO.md",
+      "accessCount": 1,
+      "lastAccessed": 1792198471909,
+      "type": "file"
+    },
+    {
+      "path": "HUONG_DAN_CHAY_TH2.md",
+      "accessCount": 1,
+      "lastAccessed": 1792198598639,
+      "type": "file"
+    },
+    {
+      "path": "lib/pages/borrowRequestsView.dart",
+      "accessCount": 1,
+      "lastAccessed": 1792198623746,
+      "type": "file"
+    },
+    {
+      "path": "KICH_BAN_QUAY_VIDEO_TH2.md",
+      "accessCount": 1,
+      "lastAccessed": 1792198645664,
+      "type": "file"
+    },
+    {
+      "path": "lib/pages/documentMapPage.dart",
+      "accessCount": 1,
+      "lastAccessed": 1792198649097,
+      "type": "file"
+    },
+    {
+      "path": "lib/widgets/notificationBell.dart",
+      "accessCount": 1,
+      "lastAccessed": 1792198679591,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/home.png",
+      "accessCount": 1,
+      "lastAccessed": 1792198852508,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/cloud.png",
+      "accessCount": 1,
+      "lastAccessed": 1792198874483,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/dbg-cloud-wide.png",
+      "accessCount": 1,
+      "lastAccessed": 1792199338036,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/wide-kham_pha.png",
+      "accessCount": 1,
+      "lastAccessed": 1792199370151,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/wide-google-signin.png",
+      "accessCount": 1,
+      "lastAccessed": 1792199421425,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/wide-bell.png",
+      "accessCount": 1,
+      "lastAccessed": 1792199422064,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/narrow-muon_tra.png",
+      "accessCount": 1,
+      "lastAccessed": 1792199454839,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/narrow-ban_do-2.png",
+      "accessCount": 1,
+      "lastAccessed": 1792199489365,
+      "type": "file"
+    },
+    {
+      "path": ".playwright-mcp/release-narrow-ban_do.png",
+      "accessCount": 1,
+      "lastAccessed": 1792200017135,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

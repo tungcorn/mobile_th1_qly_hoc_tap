@@ -24,14 +24,17 @@ class SupabaseBootstrap {
 
   static SupabaseClient get client => Supabase.instance.client;
 
-  /// Tạo client có gắn header x-user-id để Supabase Row Level Security (RLS) nhận diện
-  static SupabaseClient clientForUser(String userId) {
+  /// Tạo client có gắn header x-user-id (và x-user-email nếu có) để
+  /// Supabase Row Level Security (RLS) nhận diện người dùng
+  static SupabaseClient clientForUser(String userId, {String? email}) {
     if (!isReady) throw StateError('Supabase chưa được khởi tạo thành công.');
+    final normalizedEmail = email?.trim().toLowerCase() ?? '';
     return SupabaseClient(
       url,
       anonKey,
       headers: {
         'x-user-id': userId,
+        if (normalizedEmail.isNotEmpty) 'x-user-email': normalizedEmail,
       },
     );
   }

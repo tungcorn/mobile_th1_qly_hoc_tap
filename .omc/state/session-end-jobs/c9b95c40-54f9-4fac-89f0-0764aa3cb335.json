@@ -1,0 +1,361 @@
+{
+  "version": 1,
+  "jobId": "e5497a02-1b92-447f-ba41-d6dc0c88126d",
+  "sessionId": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+  "scopeKey": "87a4f8934e23fd3b3b85581c526e9d0e8e8ae7715cf5767823c07ebe60c269de",
+  "revision": 70,
+  "createdAt": "2026-10-17T01:29:10.981Z",
+  "updatedAt": "2026-10-17T01:29:44.992Z",
+  "producerGraceExpiresAt": "2026-10-17T01:29:40.982Z",
+  "bestEffortDeadlineAt": "2026-10-17T01:30:33.982Z",
+  "producers": {
+    "core": {
+      "state": "sealed",
+      "intentKey": "2269868c661e32708e83add7282508040ce323a9a5be723a1bab598c5be6a724",
+      "payloadDigest": "2269868c661e32708e83add7282508040ce323a9a5be723a1bab598c5be6a724",
+      "sealedAt": "2026-10-17T01:29:42.258Z",
+      "sealedBy": "recovery"
+    },
+    "wiki": {
+      "state": "no-op",
+      "sealedAt": "2026-10-17T01:29:10.981Z",
+      "sealedBy": "wiki-producer"
+    }
+  },
+  "actions": {
+    "foreground-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "febf6dba2f2536433960a07f7cedce72e946b43ced0896570df80f017b8914d2",
+      "payload": {
+        "transcriptPath": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+        "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+        "reason": "other",
+        "input": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "transcript_path": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+          "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+          "scratchpad_dir": "C:\\Users\\haini\\AppData\\Local\\Temp\\claude\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335\\scratchpad",
+          "prompt_id": "b809ec8f-b6d8-4bbb-a5aa-9720642960ce",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "ended_at": "2026-10-17T01:29:41.719Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-10-17T01:29:41.206Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "a29d37b7-7f8b-4ab9-ad6b-203882b60916",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-17T01:29:50.983Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-17T01:29:42.250Z"
+    },
+    "wiki-capture": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 0,
+      "idempotencyKey": "1719cd1ef5b51e0269b78c4cb8c9308c9c1f7b82fd1c067fc034c060f23863f5",
+      "payload": {},
+      "budgetMs": 9000,
+      "completedAt": "2026-10-17T01:29:10.981Z"
+    },
+    "team-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "cee6ac31df545408e1e822247ac249b3f8182a98a5fe8e448ae3b251e55bdee1",
+      "payload": {
+        "transcriptPath": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+        "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+        "reason": "other",
+        "input": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "transcript_path": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+          "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+          "scratchpad_dir": "C:\\Users\\haini\\AppData\\Local\\Temp\\claude\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335\\scratchpad",
+          "prompt_id": "b809ec8f-b6d8-4bbb-a5aa-9720642960ce",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "ended_at": "2026-10-17T01:29:41.719Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-10-17T01:29:42.281Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "1f1500f7-e313-403d-8af1-71f0610b47de",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-17T01:29:50.983Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-17T01:29:42.663Z"
+    },
+    "python-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "1f1370c4ac056606059d517e2f106b602d8cbcb04587b3fcc5f3b9f89e649cd0",
+      "payload": {
+        "transcriptPath": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+        "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+        "reason": "other",
+        "input": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "transcript_path": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+          "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+          "scratchpad_dir": "C:\\Users\\haini\\AppData\\Local\\Temp\\claude\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335\\scratchpad",
+          "prompt_id": "b809ec8f-b6d8-4bbb-a5aa-9720642960ce",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "ended_at": "2026-10-17T01:29:41.719Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-10-17T01:29:42.679Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "7e322b8a-93e1-409a-b9a4-1386c031fdca",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-17T01:29:50.983Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-17T01:29:43.065Z"
+    },
+    "reply-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "0b3a8b47c28b26d56aca004d4f572b96c118f16819c0d35162418816f9a5420a",
+      "payload": {
+        "transcriptPath": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+        "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+        "reason": "other",
+        "input": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "transcript_path": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+          "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+          "scratchpad_dir": "C:\\Users\\haini\\AppData\\Local\\Temp\\claude\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335\\scratchpad",
+          "prompt_id": "b809ec8f-b6d8-4bbb-a5aa-9720642960ce",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {}
+      },
+      "budgetMs": 9000,
+      "claimedAt": "2026-10-17T01:29:43.080Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "5bc25b1d-318f-47b8-9e8e-9a3a95de51ac",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-17T01:29:50.983Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-17T01:29:43.468Z"
+    },
+    "callback": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "d068ede2655bf89e0c0950e087d0603d7dcf45538e94f20a654d08c6f4841895",
+      "payload": {
+        "transcriptPath": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+        "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+        "reason": "other",
+        "input": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "transcript_path": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+          "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+          "scratchpad_dir": "C:\\Users\\haini\\AppData\\Local\\Temp\\claude\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335\\scratchpad",
+          "prompt_id": "b809ec8f-b6d8-4bbb-a5aa-9720642960ce",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "ended_at": "2026-10-17T01:29:41.719Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-10-17T01:29:43.493Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "a02f6978-8a10-4e78-93c1-9622f9aa6153",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-17T01:29:50.983Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-17T01:29:43.843Z"
+    },
+    "notification": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "89c0438ff63097ce04beb60efb87292ff68a7af350a0ee331f3de9dbf42d62fc",
+      "payload": {
+        "transcriptPath": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+        "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+        "reason": "other",
+        "input": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "transcript_path": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+          "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+          "scratchpad_dir": "C:\\Users\\haini\\AppData\\Local\\Temp\\claude\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335\\scratchpad",
+          "prompt_id": "b809ec8f-b6d8-4bbb-a5aa-9720642960ce",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "ended_at": "2026-10-17T01:29:41.719Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-10-17T01:29:43.859Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "fa9c1c80-818e-479a-be7b-9fb1590db975",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-17T01:29:50.983Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-17T01:29:44.207Z"
+    },
+    "openclaw": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "31fe8f6e1cf204e27006de511df257326fdd98655122ca437013e8779ffc735b",
+      "payload": {
+        "transcriptPath": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+        "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+        "reason": "other",
+        "input": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "transcript_path": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+          "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+          "scratchpad_dir": "C:\\Users\\haini\\AppData\\Local\\Temp\\claude\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335\\scratchpad",
+          "prompt_id": "b809ec8f-b6d8-4bbb-a5aa-9720642960ce",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {},
+        "metrics": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "ended_at": "2026-10-17T01:29:41.719Z",
+          "reason": "other",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        }
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-10-17T01:29:44.225Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "0e669831-9b50-4daa-9257-6ef539e7041a",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-17T01:29:50.983Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-17T01:29:44.583Z"
+    },
+    "spawn-next": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "completed",
+      "attempts": 1,
+      "idempotencyKey": "408951e1348d4a381fd7b22db242636c91151ee01597146cf28243ae3875d0be",
+      "payload": {
+        "transcriptPath": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+        "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+        "reason": "other",
+        "input": {
+          "session_id": "c9b95c40-54f9-4fac-89f0-0764aa3cb335",
+          "transcript_path": "C:\\Users\\haini\\.claude\\projects\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335.jsonl",
+          "cwd": "C:\\Workin\\mobile_th1_qly_hoc_tap",
+          "scratchpad_dir": "C:\\Users\\haini\\AppData\\Local\\Temp\\claude\\C--Workin-mobile-th1-qly-hoc-tap\\c9b95c40-54f9-4fac-89f0-0764aa3cb335\\scratchpad",
+          "prompt_id": "b809ec8f-b6d8-4bbb-a5aa-9720642960ce",
+          "hook_event_name": "SessionEnd",
+          "reason": "other"
+        },
+        "initialTeamNames": [],
+        "openClawRouting": {}
+      },
+      "budgetMs": 2000,
+      "claimedAt": "2026-10-17T01:29:44.599Z",
+      "runner": {
+        "attempt": 1,
+        "runnerNonce": "5c09ec75-1e77-456a-87b2-b679d7bff827",
+        "phase": "terminal",
+        "deadlineAt": "2026-10-17T01:29:50.983Z"
+      },
+      "lastOutcomeCode": "completed",
+      "completedAt": "2026-10-17T01:29:44.961Z"
+    }
+  },
+  "owner": null,
+  "phase": "complete",
+  "recoverableFailure": {
+    "reason": "actions-settled",
+    "releasedAt": "2026-10-17T01:29:44.976Z",
+    "ownerNonce": "681099fa-0af7-4666-bdfc-413442133e56"
+  },
+  "completion": {
+    "completedAt": "2026-10-17T01:29:44.976Z",
+    "terminalDigest": "2a5a3a925df8277a6bed969cd564e978921cb24a3c0328614ed6ea5d675b5d79",
+    "terminalRevision": 69
+  }
+}

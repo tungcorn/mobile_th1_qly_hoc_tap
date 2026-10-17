@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "entries": {
+    "79a93d4a2f8f50b95f852280616242fee1855dc99a3c75211917f55e72e95fae": {
+      "last_emitted_at_ms": 1792200057828,
+      "message": "Use parallel execution for independent tasks. Use run_in_background for long operations (npm install, builds, tests)."
+    },
+    "466399dafa2d20f60587180bad0a07358eb7f2bce724df0ff682f038ad33f5ad": {
+      "last_emitted_at_ms": 1792199908056,
+      "message": "Read multiple files in parallel when possible for faster analysis."
+    },
+    "445ed27a3872b681d98190bae61ccb84954e1bc4e140df5370be958dee776b3a": {
+      "last_emitted_at_ms": 1792199508434,
+      "message": "Verify changes work after editing. Test functionality before marking complete."
+    },
+    "79dbc1957d58169e2d40c06b50c017a722d2462459b93227dd2d24c4b04df146": {
+      "last_emitted_at_ms": 1792198890392,
+      "message": "[SLOP WARNING] Detected fallback/workaround language in this tool input. Do not make potential slop: avoid ad-hoc fallback layers, workaround shims, or environment-specific patches unless explicitly justified. For architecture concerns, consult the architect for a concrete design first. If this seems environment-specific, ask the user to confirm constraints before proceeding.\n\nSpawning agent: oh-my-claudecode:debugger (opus) | Task: Fix grey screen null-check crash"
+    },
+    "cdca8e714592c00d22cf4111c70dcf8038cf1f41707e8af4df23b4eb4dd6d443": {
+      "last_emitted_at_ms": 1792198465365,
+      "message": "Spawning agent: oh-my-claudecode:writer (sonnet) | Task: Write TH2 report + video script | Active agents: 2"
+    },
+    "f1a95e481faeb3ee49364a6011a8c5d4e18f9cbf93f1980063a7051ae92e7db0": {
+      "last_emitted_at_ms": 1792198443570,
+      "message": "Spawning agent: oh-my-claudecode:executor (opus) | Task: Integrate TH2 into documents page | Active agents: 1"
+    },
+    "e0d31e0605129f4600f1a1323100e72053e5c8edbf838e224133a43f7c1cd9cf": {
+      "last_emitted_at_ms": 1792198425522,
+      "message": "Spawning agent: oh-my-claudecode:executor (opus) | Task: New TH2 views (discover/borrow/map)"
+    },
+    "f8195432f05e47b45185e4ede291df0be109ae7d5bd0b26e610f286cfc80ddd3": {
+      "last_emitted_at_ms": 1792198150446,
+      "message": "Spawning agent: oh-my-claudecode:designer (inherit) | Task: Tag + map/location widgets | Active agents: 3"
+    },
+    "79d28e3b136b2a3c2c74edadf853e4f49aec7d2b8594a1e63aa65dd358803718": {
+      "last_emitted_at_ms": 1792198140655,
+      "message": "Spawning agent: oh-my-claudecode:executor (inherit) | Task: FCM + realtime notifications | Active agents: 2"
+    },
+    "32c41c56bf0bf35adf2702058b85cf81f6861ea0c99d5b1c07154ae29a525054": {
+      "last_emitted_at_ms": 1792198129213,
+      "message": "Spawning agent: oh-my-claudecode:executor (inherit) | Task: Recommendation engine + tests | Active agents: 1"
+    },
+    "c2f167d067c42827fabc33d0355bc41f606a071b92d62fc50c7c21f9993d62ee": {
+      "last_emitted_at_ms": 1792198120820,
+      "message": "[SLOP WARNING] Detected fallback/workaround language in this tool input. Do not make potential slop: avoid ad-hoc fallback layers, workaround shims, or environment-specific patches unless explicitly justified. For architecture concerns, consult the architect for a concrete design first. If this seems environment-specific, ask the user to confirm constraints before proceeding.\n\nSpawning agent: oh-my-claudecode:executor (opus) | Task: Data layer + SQL migration"
+    },
+    "459c54e5f35d6a58dcd90d2aecc21fa6d1f35d241bc5b134c506f87dc7b6d67b": {
+      "last_emitted_at_ms": 1792197862190,
+      "message": "Combine searches in parallel when investigating multiple patterns."
+    },
+    "004e1f28a931818d5f9b6cc157aeddab1c806c75879fc9d4b19ab713fae3fa77": {
+      "last_emitted_at_ms": 1792197836710,
+      "message": "Spawning agent: Explore (inherit) | Task: Check build/test constraints | Active agents: 2"
+    },
+    "efd424dd29c5f4c3da74026f33476e815b646c17f3a3db3ceba410baef6a37d4": {
+      "last_emitted_at_ms": 1792197834148,
+      "message": "Spawning agent: Explore (inherit) | Task: Trace Firebase/Supabase integration | Active agents: 1"
+    },
+    "c7f0c8f0665899efe7a5c556b4582618b19351b8c47d1de5fe1400d52e2bf42b": {
+      "last_emitted_at_ms": 1792197831136,
+      "message": "Spawning agent: Explore (inherit) | Task: Map project structure"
+    }
+  },
+  "updated_at": "2026-10-17T01:20:57.828Z"
+}

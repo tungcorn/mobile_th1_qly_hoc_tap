@@ -1,19 +1,47 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:path/path.dart' as p;
 
 import '../cloud/cloudDocument.dart';
 import '../cloud/cloudDocumentService.dart';
+import '../cloud/firebaseBootstrap.dart';
+import '../cloud/notificationService.dart';
 import '../cloud/supabaseDocumentService.dart';
 import '../functions.dart';
+import '../widgets/cloudDocumentDetailSheet.dart';
 import '../widgets/cloudUi.dart';
 import '../widgets/emptyStateView.dart';
+import '../widgets/notificationBell.dart';
+import '../widgets/tagInput.dart';
+import 'borrowRequestsView.dart';
+import 'discoverView.dart';
+import 'documentMapPage.dart';
+import 'locationPickerPage.dart';
+
+/// Trạng thái các trường TH2 (tag, công khai, vị trí) dùng chung cho dialog tải lên / sửa
+class _Th2FormData {
+  List<String> tags;
+  bool isPublic;
+  String? locationName;
+  double? latitude;
+  double? longitude;
+
+  _Th2FormData({
+    List<String>? tags,
+    this.isPublic = false,
+    this.locationName,
+    this.latitude,
+    this.longitude,
+  }) : tags = tags ?? [];
+
+  bool get hasLocation => latitude != null && longitude != null;
+}
 
 class SupabaseDocumentsPage extends StatefulWidget {
   final CloudDocumentService? firebaseService;
@@ -25,7 +53,8 @@ class SupabaseDocumentsPage extends StatefulWidget {
 }
 
 class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with SingleTickerProviderStateMixin {
-  late final CloudDocumentService _firebaseService;
+  // null khi Firebase chưa cấu hình (FirebaseBootstrap.isReady=false) -> chỉ dùng tài khoản demo
+  late final CloudDocumentService? _firebaseService;
   StreamSubscription<User?>? _authSubscription;
   User? _currentUser;
   SupabaseDocumentService? _supabaseService;
@@ -41,6 +70,12 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
   // Documents State
   List<SupabaseDocument> _myDocuments = [];
   List<SupabaseDocument> _sharedDocuments = [];
+
+  // TH2: điều hướng, lọc theo tag, thông báo
+  int _navIndex = 0;
+  List<String> _allTags = [];
+  final Set<String> _selectedTags = {};
+  StreamSubscription<AppNotification>? _notificationSubscription;
 
   // Demo Multi-Account Switcher (Checklist 6)
   final List<Map<String, String>> _testAccounts = [
@@ -65,8 +100,9 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _firebaseService = widget.firebaseService ?? CloudDocumentService();
-    _currentUser = _firebaseService.currentUser;
+    _firebaseService = widget.firebaseService ??
+        (FirebaseBootstrap.isReady ? CloudDocumentService() : null);
+    _currentUser = _firebaseService?.currentUser;
 
     if (_currentUser != null) {
       _initSupabaseForUser(_currentUser!.uid, _currentUser!.email ?? 'user@studydoc.edu.vn', displayName: _currentUser!.displayName, photoUrl: _currentUser!.photoURL);
@@ -76,7 +112,17 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
       _initSupabaseForUser(defaultAcc['uid']!, defaultAcc['email']!, displayName: defaultAcc['name']);
     }
 
-    _authSubscription = _firebaseService.authChanges.listen((user) {
+    // Hiển thị thông báo đến (FCM foreground / Supabase Realtime) khi trang đang mở
+    _notificationSubscription = NotificationService.stream.listen((n) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(n.body.isEmpty ? n.title : '${n.title}: ${n.body}'),
+        ),
+      );
+    });
+
+    _authSubscription = _firebaseService?.authChanges.listen((user) {
       if (!mounted) return;
       if (user != _currentUser) {
         setState(() {
@@ -97,6 +143,7 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
   @override
   void dispose() {
     _authSubscription?.cancel();
+    _notificationSubscription?.cancel();
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -108,8 +155,12 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
       _statusMessage = 'Đang mở cửa sổ xác thực Google...';
     });
     try {
-      await _firebaseService.signInWithGoogle();
-      final user = _firebaseService.currentUser;
+      final service = _firebaseService;
+      if (service == null) {
+        throw StateError('Firebase chưa được cấu hình trên máy này.');
+      }
+      await service.signInWithGoogle();
+      final user = service.currentUser;
       if (user != null && mounted) {
         setState(() {
           _currentUser = user;
@@ -158,7 +209,7 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
       _statusMessage = 'Đang đăng xuất tài khoản Google...';
     });
     try {
-      await _firebaseService.signOut();
+      await _firebaseService?.signOut();
       if (mounted) {
         final defaultAcc = _testAccounts.first;
         setState(() {
@@ -200,6 +251,40 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
       displayName: displayName ?? _currentUser?.displayName ?? email.split('@').first,
       avatarUrl: photoUrl ?? _currentUser?.photoURL,
     );
+    _selectedTags.clear();
+    _allTags = [];
+    _registerNotifications(_supabaseService!);
+    _loadDocuments();
+    _loadTags();
+  }
+
+  /// TH2: lắng nghe kênh thông báo của người dùng và lưu FCM token (bỏ qua lỗi)
+  Future<void> _registerNotifications(SupabaseDocumentService service) async {
+    await NotificationService.listenForUser(service.currentUserId);
+    final token = NotificationService.fcmToken;
+    if (token != null) {
+      try {
+        await service.saveFcmToken(token);
+      } catch (_) {}
+    }
+  }
+
+  /// TH2: tải danh sách tag để lọc & gợi ý
+  Future<void> _loadTags() async {
+    final service = _supabaseService;
+    if (service == null) return;
+    try {
+      final tags = await service.getAllTags();
+      if (mounted && identical(service, _supabaseService)) {
+        setState(() => _allTags = tags);
+      }
+    } catch (_) {}
+  }
+
+  void _toggleTag(String tag) {
+    setState(() {
+      if (!_selectedTags.remove(tag)) _selectedTags.add(tag);
+    });
     _loadDocuments();
   }
 
@@ -333,10 +418,12 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
       final myDocs = await _supabaseService!.getDocuments(
         searchQuery: _searchQuery,
         onlySharedWithMe: false,
+        tags: _selectedTags.toList(),
       );
       final sharedDocs = await _supabaseService!.getDocuments(
         searchQuery: _searchQuery,
         onlySharedWithMe: true,
+        tags: _selectedTags.toList(),
       );
 
       if (mounted) {
@@ -365,6 +452,8 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
     final descController = TextEditingController();
     String? pickedFileName;
     Uint8List? pickedFileBytes;
+    final th2 = _Th2FormData(isPublic: true);
+    _loadTags();
 
     final result = await showDialog<bool>(
       context: context,
@@ -372,6 +461,7 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
       builder: (dialogCtx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
           return AlertDialog(
+            insetPadding: _dialogInsetPadding(ctx),
             title: const Row(
               children: [
                 Icon(Icons.cloud_upload_rounded, color: Colors.blue),
@@ -385,8 +475,8 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
                 ),
               ],
             ),
-            content: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
+            content: SizedBox(
+              width: _dialogMaxWidth,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -444,6 +534,8 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
                         style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                       ),
                     ],
+                    const SizedBox(height: 16),
+                    _buildTh2Fields(ctx, th2, setDialogState),
                   ],
                 ),
               ),
@@ -491,6 +583,11 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
           fileName: pickedFileName!,
           fileBytes: pickedFileBytes!,
           mimeType: CloudFilePolicy.contentTypeFor(pickedFileName!),
+          tags: th2.tags,
+          locationName: th2.hasLocation ? th2.locationName : null,
+          latitude: th2.latitude,
+          longitude: th2.longitude,
+          isPublic: th2.isPublic,
         );
 
         if (mounted) {
@@ -498,6 +595,7 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
             const SnackBar(content: Text('Tải lên thành công! Tài liệu đã được lưu trên Supabase.')),
           );
           _loadDocuments();
+          _loadTags();
         }
       } catch (e) {
         if (mounted) {
@@ -519,58 +617,80 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
   Future<void> _openEditDialog(SupabaseDocument doc) async {
     final titleController = TextEditingController(text: doc.title);
     final descController = TextEditingController(text: doc.description);
+    final th2 = _Th2FormData(
+      tags: List<String>.from(doc.tags),
+      isPublic: doc.isPublic,
+      locationName: doc.locationName,
+      latitude: doc.latitude,
+      longitude: doc.longitude,
+    );
+    _loadTags();
 
     final saved = await showDialog<bool>(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        title: const Text(
-          'Cập nhật Thông tin Tài liệu',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        content: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 450),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: titleController,
-                  decoration: const InputDecoration(labelText: 'Tiêu đề tài liệu *', border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: descController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(labelText: 'Mô tả / Ghi chú', border: OutlineInputBorder()),
-                ),
-              ],
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          insetPadding: _dialogInsetPadding(ctx),
+          title: const Text(
+            'Cập nhật Thông tin Tài liệu',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          content: SizedBox(
+            width: _dialogMaxWidth,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(labelText: 'Tiêu đề tài liệu *', border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: descController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(labelText: 'Mô tả / Ghi chú', border: OutlineInputBorder()),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTh2Fields(ctx, th2, setDialogState),
+                ],
+              ),
             ),
           ),
+          actionsOverflowDirection: VerticalDirection.down,
+          actions: [
+            TextButton(onPressed: () => Navigator.of(dialogCtx).pop(false), child: const Text('Hủy')),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(true),
+              child: const Text('Lưu thay đổi'),
+            ),
+          ],
         ),
-        actionsOverflowDirection: VerticalDirection.down,
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogCtx).pop(false), child: const Text('Hủy')),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(true),
-            child: const Text('Lưu thay đổi'),
-          ),
-        ],
       ),
     );
 
     if (saved == true && _supabaseService != null) {
+      // locationName '' = xóa vị trí cũ; null = giữ nguyên
+      final hadLocation = doc.hasLocation || doc.locationName != null;
       try {
         await _supabaseService!.updateDocument(
           documentId: doc.id,
           title: titleController.text.trim(),
           description: descController.text.trim(),
+          tags: th2.tags,
+          isPublic: th2.isPublic,
+          locationName: th2.hasLocation ? (th2.locationName ?? 'Vị trí đã chọn') : (hadLocation ? '' : null),
+          latitude: th2.latitude,
+          longitude: th2.longitude,
         );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Cập nhật thông tin tài liệu thành công!')),
           );
           _loadDocuments();
+          _loadTags();
         }
       } catch (e) {
         if (mounted) {
@@ -580,6 +700,97 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
         }
       }
     }
+  }
+
+  static const double _dialogMaxWidth = 560;
+
+  /// Dialog gần toàn màn hình trên điện thoại, căn giữa trên web/desktop
+  EdgeInsets _dialogInsetPadding(BuildContext ctx) {
+    final isNarrow = MediaQuery.sizeOf(ctx).width < CloudUi.compactBreakpoint;
+    return isNarrow
+        ? const EdgeInsets.symmetric(horizontal: CloudUi.standard, vertical: CloudUi.section)
+        : const EdgeInsets.symmetric(horizontal: 40, vertical: CloudUi.section);
+  }
+
+  /// Các trường TH2 dùng chung: tag, công khai, vị trí vật lý
+  Widget _buildTh2Fields(BuildContext ctx, _Th2FormData data, StateSetter setDialogState) {
+    final scheme = Theme.of(ctx).colorScheme;
+    final locationText = data.hasLocation
+        ? '${(data.locationName ?? '').isEmpty ? 'Vị trí đã chọn' : data.locationName}\n'
+            '(${data.latitude!.toStringAsFixed(5)}, ${data.longitude!.toStringAsFixed(5)})'
+        : 'Chưa gắn vị trí vật lý';
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TagInput(
+          tags: data.tags,
+          suggestions: _allTags,
+          onChanged: (tags) => setDialogState(() => data.tags = tags),
+        ),
+        const SizedBox(height: CloudUi.small),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          value: data.isPublic,
+          onChanged: (v) => setDialogState(() => data.isPublic = v),
+          secondary: const Icon(Icons.public_rounded),
+          title: const Text('Công khai (cho phép người khác khám phá & mượn)'),
+        ),
+        const SizedBox(height: CloudUi.small),
+        Text('Vị trí vật lý', style: Theme.of(ctx).textTheme.titleSmall),
+        const SizedBox(height: CloudUi.tight),
+        Wrap(
+          spacing: CloudUi.small,
+          runSpacing: CloudUi.small,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  data.hasLocation ? Icons.place_rounded : Icons.location_off_outlined,
+                  color: data.hasLocation ? scheme.primary : scheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: CloudUi.small),
+                Flexible(
+                  child: Text(
+                    locationText,
+                    style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                  ),
+                ),
+              ],
+            ),
+            OutlinedButton.icon(
+              onPressed: () async {
+                final picked = await Navigator.of(ctx).push<PickedLocation>(
+                  MaterialPageRoute(
+                    builder: (_) => LocationPickerPage(
+                      initial: data.hasLocation ? LatLng(data.latitude!, data.longitude!) : null,
+                      initialName: data.locationName,
+                    ),
+                  ),
+                );
+                if (picked == null) return;
+                setDialogState(() {
+                  if (picked.cleared) {
+                    data.locationName = null;
+                    data.latitude = null;
+                    data.longitude = null;
+                  } else {
+                    data.locationName = picked.name.isEmpty ? 'Vị trí đã chọn' : picked.name;
+                    data.latitude = picked.point.latitude;
+                    data.longitude = picked.point.longitude;
+                  }
+                });
+              },
+              icon: const Icon(Icons.map_outlined, size: 18),
+              label: const Text('Chọn trên bản đồ'),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   Future<void> _openShareDialog(SupabaseDocument doc) async {
@@ -940,23 +1151,213 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
     }
   }
 
+  /// TH2: tạo nhanh bộ tài liệu mẫu (tag + vị trí khu vực Hà Nội) cho tài khoản hiện tại
+  Future<void> _seedDemoData() async {
+    final service = _supabaseService;
+    if (service == null) return;
+
+    const samples = [
+      (
+        title: 'Flutter cơ bản: Widget & State',
+        file: 'flutter_co_ban.txt',
+        text: 'Tóm tắt StatelessWidget, StatefulWidget, setState và vòng đời widget trong Flutter.',
+        tags: ['flutter', 'mobile'],
+        place: 'Thư viện Tạ Quang Bửu',
+        lat: 21.00475,
+        lng: 105.84552,
+        public: true,
+      ),
+      (
+        title: 'Firebase Auth & Cloud Messaging',
+        file: 'firebase_auth_fcm.txt',
+        text: 'Ghi chú đăng nhập Google bằng Firebase Auth và gửi thông báo đẩy qua FCM.',
+        tags: ['firebase', 'mobile', 'flutter'],
+        place: 'Tủ tài liệu phòng 301',
+        lat: 21.00395,
+        lng: 105.84330,
+        public: true,
+      ),
+      (
+        title: 'Supabase: Postgres & Row Level Security',
+        file: 'supabase_rls.txt',
+        text: 'Cách viết policy RLS, bảng document_permissions và Storage bucket trên Supabase.',
+        tags: ['supabase', 'database'],
+        place: 'Thư viện Quốc gia Việt Nam',
+        lat: 21.02560,
+        lng: 105.85050,
+        public: true,
+      ),
+      (
+        title: 'Nhập môn Trí tuệ nhân tạo',
+        file: 'nhap_mon_ai.txt',
+        text: 'Tìm kiếm heuristic, học máy cơ bản và đánh giá mô hình phân loại.',
+        tags: ['ai', 'toan'],
+        place: 'Thư viện ĐHQG Hà Nội (Xuân Thủy)',
+        lat: 21.03790,
+        lng: 105.78260,
+        public: true,
+      ),
+      (
+        title: 'Giải tích 1: Đề cương ôn tập',
+        file: 'giai_tich_1.txt',
+        text: 'Giới hạn, đạo hàm, tích phân và chuỗi số. Kèm bài tập mẫu có lời giải.',
+        tags: ['toan', 'giaitich'],
+        place: 'Phòng học nhóm B1',
+        lat: 21.00620,
+        lng: 105.84410,
+        public: true,
+      ),
+      (
+        title: 'Thiết kế cơ sở dữ liệu (ghi chú riêng)',
+        file: 'thiet_ke_csdl.txt',
+        text: 'Chuẩn hóa 1NF-3NF, khóa ngoại và chỉ mục. Ghi chú cá nhân chưa công khai.',
+        tags: ['database', 'ai'],
+        place: 'Nhà riêng - Cầu Giấy',
+        lat: 21.03330,
+        lng: 105.79400,
+        public: false,
+      ),
+    ];
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Tạo dữ liệu mẫu TH2?'),
+        content: Text(
+          'Sẽ tạo ${samples.length} tài liệu văn bản nhỏ có tag, vị trí vật lý (Hà Nội) '
+          'và trạng thái công khai cho tài khoản ${service.currentUserEmail}.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Hủy')),
+          FilledButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Tạo dữ liệu')),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+
+    var created = 0;
+    String? firstError;
+    for (var i = 0; i < samples.length; i++) {
+      final s = samples[i];
+      if (!mounted) return;
+      setState(() {
+        _busy = true;
+        _statusMessage = 'Đang tạo dữ liệu mẫu ${i + 1}/${samples.length}: ${s.title}';
+      });
+      try {
+        await service.createDocument(
+          title: s.title,
+          description: s.text,
+          fileName: s.file,
+          fileBytes: Uint8List.fromList(utf8.encode('${s.title}\n\n${s.text}\n')),
+          mimeType: 'text/plain',
+          tags: s.tags,
+          locationName: s.place,
+          latitude: s.lat,
+          longitude: s.lng,
+          isPublic: s.public,
+        );
+        created++;
+      } catch (e) {
+        firstError ??= cloudErrorMessage(e);
+      }
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      _statusMessage = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          firstError == null
+              ? 'Đã tạo $created tài liệu mẫu TH2.'
+              : 'Đã tạo $created/${samples.length} tài liệu mẫu. Lỗi: $firstError',
+        ),
+      ),
+    );
+    if (identical(service, _supabaseService)) {
+      _loadDocuments();
+      _loadTags();
+    }
+  }
+
   // --- UI BUILD ---
+
+  static const _destinations = [
+    (icon: Icons.folder_outlined, selectedIcon: Icons.folder_rounded, label: 'Tài liệu'),
+    (icon: Icons.explore_outlined, selectedIcon: Icons.explore_rounded, label: 'Khám phá'),
+    (icon: Icons.swap_horiz_outlined, selectedIcon: Icons.swap_horiz_rounded, label: 'Mượn trả'),
+    (icon: Icons.map_outlined, selectedIcon: Icons.map_rounded, label: 'Bản đồ'),
+  ];
+
+  void _selectDestination(int index) {
+    if (index == _navIndex) return;
+    setState(() => _navIndex = index);
+  }
+
+  /// Nội dung theo mục điều hướng; mỗi view gắn key theo UID để dựng lại khi đổi tài khoản
+  Widget _buildDestinationBody() {
+    final service = _supabaseService;
+    if (_navIndex == 0 || service == null) return _buildDocumentsBody();
+    final uid = service.currentUserId;
+    switch (_navIndex) {
+      case 1:
+        return DiscoverView(key: ValueKey('discover-$uid'), service: service);
+      case 2:
+        return BorrowRequestsView(key: ValueKey('borrow-$uid'), service: service);
+      default:
+        return DocumentMapPage(key: ValueKey('map-$uid'), service: service);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final useRail = width >= 840;
+    final onDocuments = _navIndex == 0;
+
+    final content = Column(
+      children: [
+        _buildAccountCard(),
+        if (_busy) ...[
+          const LinearProgressIndicator(),
+          if (_statusMessage != null)
+            Padding(
+              padding: const EdgeInsets.all(4),
+              child: Text(_statusMessage!, style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic)),
+            ),
+        ],
+        Expanded(child: _buildDestinationBody()),
+      ],
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Tài liệu Cloud',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        title: Text(
+          onDocuments ? 'Tài liệu Cloud' : _destinations[_navIndex].label,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Làm mới danh sách',
-            onPressed: _loadDocuments,
-          ),
-          if (_currentUser == null)
+          const NotificationBell(),
+          if (onDocuments)
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded),
+              tooltip: 'Làm mới danh sách',
+              onPressed: () {
+                _loadDocuments();
+                _loadTags();
+              },
+            ),
+          if (_currentUser == null && width < 600)
+            // Màn hẹp: chỉ hiện icon để tiêu đề AppBar không bị ép mất chữ
+            IconButton(
+              icon: const Icon(Icons.login_rounded),
+              tooltip: 'Đăng nhập Google',
+              onPressed: _busy ? null : _signInGoogle,
+            )
+          else if (_currentUser == null)
             Padding(
               padding: const EdgeInsets.only(right: 4),
               child: FilledButton.tonalIcon(
@@ -1136,31 +1537,93 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
                 ),
             ],
           ),
+          // Menu tiện ích TH2
+          PopupMenuButton<String>(
+            tooltip: 'Tùy chọn khác',
+            icon: const Icon(Icons.more_vert_rounded),
+            onSelected: (val) {
+              if (val == 'seed_th2') _seedDemoData();
+            },
+            itemBuilder: (ctx) => [
+              PopupMenuItem<String>(
+                value: 'seed_th2',
+                enabled: !_busy,
+                child: const Row(
+                  children: [
+                    Icon(Icons.dataset_rounded, size: 18),
+                    SizedBox(width: 8),
+                    Text('Tạo dữ liệu mẫu TH2'),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(
-              icon: const Icon(Icons.folder_shared_rounded, size: 20),
-              text: 'Của tôi (${_myDocuments.length})',
-            ),
-            Tab(
-              icon: const Icon(Icons.people_alt_rounded, size: 20),
-              text: 'Được chia sẻ (${_sharedDocuments.length})',
-            ),
-          ],
-        ),
+        bottom: onDocuments
+            ? TabBar(
+                controller: _tabController,
+                tabs: [
+                  Tab(
+                    icon: const Icon(Icons.folder_shared_rounded, size: 20),
+                    text: 'Của tôi (${_myDocuments.length})',
+                  ),
+                  Tab(
+                    icon: const Icon(Icons.people_alt_rounded, size: 20),
+                    text: 'Được chia sẻ (${_sharedDocuments.length})',
+                  ),
+                ],
+              )
+            : null,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openUploadDialog,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Thêm tài liệu mới'),
-      ),
-      body: Column(
-        children: [
+      floatingActionButton: onDocuments
+          ? FloatingActionButton.extended(
+              onPressed: _openUploadDialog,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Thêm tài liệu mới'),
+            )
+          : null,
+      bottomNavigationBar: useRail
+          ? null
+          : NavigationBar(
+              selectedIndex: _navIndex,
+              onDestinationSelected: _selectDestination,
+              destinations: [
+                for (final d in _destinations)
+                  NavigationDestination(
+                    icon: Icon(d.icon),
+                    selectedIcon: Icon(d.selectedIcon),
+                    label: d.label,
+                  ),
+              ],
+            ),
+      body: useRail
+          ? Row(
+              children: [
+                NavigationRail(
+                  selectedIndex: _navIndex,
+                  onDestinationSelected: _selectDestination,
+                  extended: width >= 1200,
+                  labelType: width >= 1200 ? NavigationRailLabelType.none : NavigationRailLabelType.all,
+                  destinations: [
+                    for (final d in _destinations)
+                      NavigationRailDestination(
+                        icon: Icon(d.icon),
+                        selectedIcon: Icon(d.selectedIcon),
+                        label: Text(d.label),
+                      ),
+                  ],
+                ),
+                const VerticalDivider(width: 1),
+                Expanded(child: content),
+              ],
+            )
+          : content,
+    );
+  }
 
-          // Thẻ định danh tài khoản đang đăng nhập (Checklist 1, 3, 6)
-          Container(
+  // Thẻ định danh tài khoản đang đăng nhập (Checklist 1, 3, 6)
+  Widget _buildAccountCard() {
+    return Container(
             margin: const EdgeInsets.fromLTRB(16, 10, 16, 4),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
@@ -1196,12 +1659,16 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
                     children: [
                       Row(
                         children: [
-                          Text(
-                            _isUsingGoogle ? 'Tài khoản Google (Firebase)' : 'Tài khoản kiểm thử RLS',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: _isUsingGoogle ? Colors.green.shade900 : Colors.blue.shade900,
+                          Flexible(
+                            child: Text(
+                              _isUsingGoogle ? 'Tài khoản Google (Firebase)' : 'Tài khoản kiểm thử RLS',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: _isUsingGoogle ? Colors.green.shade900 : Colors.blue.shade900,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -1243,8 +1710,13 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
                 ),
               ],
             ),
-          ),
+          );
+  }
 
+  /// Mục "Tài liệu": tìm kiếm, lọc tag và 2 tab Của tôi / Được chia sẻ
+  Widget _buildDocumentsBody() {
+    return Column(
+      children: [
           // Thanh tìm kiếm (Checklist 4)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
@@ -1275,14 +1747,39 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
             ),
           ),
 
-          if (_busy) ...[
-            const LinearProgressIndicator(),
-            if (_statusMessage != null)
-              Padding(
-                padding: const EdgeInsets.all(4),
-                child: Text(_statusMessage!, style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic)),
+          // Bộ lọc theo tag (TH2)
+          if (_allTags.isNotEmpty || _selectedTags.isNotEmpty)
+            SizedBox(
+              height: 44,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                children: [
+                  if (_selectedTags.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(right: CloudUi.small),
+                      child: ActionChip(
+                        avatar: const Icon(Icons.filter_alt_off_rounded, size: 16),
+                        label: const Text('Bỏ lọc'),
+                        onPressed: () {
+                          setState(() => _selectedTags.clear());
+                          _loadDocuments();
+                        },
+                      ),
+                    ),
+                  for (final tag in {..._selectedTags, ..._allTags})
+                    Padding(
+                      padding: const EdgeInsets.only(right: CloudUi.small),
+                      child: FilterChip(
+                        label: Text('#$tag'),
+                        selected: _selectedTags.contains(tag),
+                        visualDensity: VisualDensity.compact,
+                        onSelected: (_) => _toggleTag(tag),
+                      ),
+                    ),
+                ],
               ),
-          ],
+            ),
 
           if (_errorMessage != null)
             Padding(
@@ -1300,8 +1797,7 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
               ],
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -1363,12 +1859,15 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
         );
       }
       return Center(
-        child: EmptyStateView(
-          icon: isMyDocumentsTab ? Icons.note_add_rounded : Icons.people_outline_rounded,
-          title: isMyDocumentsTab ? 'Chưa có tài liệu nào' : 'Chưa có tài liệu nào được chia sẻ với bạn',
-          description: isMyDocumentsTab
-              ? 'Bấm nút "Thêm tài liệu mới" ở góc dưới để bắt đầu tải tệp lên Cloud.'
-              : 'Khi sinh viên khác chia sẻ tài liệu cho email của bạn (${_supabaseService?.currentUserEmail ?? ""}), nó sẽ xuất hiện tại đây.',
+        // Cuộn được khi vùng tab thấp (màn hẹp/ngang, có banner lỗi) để tránh overflow
+        child: SingleChildScrollView(
+          child: EmptyStateView(
+            icon: isMyDocumentsTab ? Icons.note_add_rounded : Icons.people_outline_rounded,
+            title: isMyDocumentsTab ? 'Chưa có tài liệu nào' : 'Chưa có tài liệu nào được chia sẻ với bạn',
+            description: isMyDocumentsTab
+                ? 'Bấm nút "Thêm tài liệu mới" ở góc dưới để bắt đầu tải tệp lên Cloud.'
+                : 'Khi sinh viên khác chia sẻ tài liệu cho email của bạn (${_supabaseService?.currentUserEmail ?? ""}), nó sẽ xuất hiện tại đây.',
+          ),
         ),
       );
     }
@@ -1385,7 +1884,20 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
             borderRadius: BorderRadius.circular(12),
             side: BorderSide(color: Colors.grey.shade200),
           ),
-          child: Padding(
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: _supabaseService == null
+                ? null
+                : () => showCloudDocumentDetail(
+                      context,
+                      service: _supabaseService!,
+                      doc: doc,
+                      onChanged: () {
+                        _loadDocuments();
+                        _loadTags();
+                      },
+                    ),
+            child: Padding(
             padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1414,7 +1926,27 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
                         ],
                       ),
                     ),
-                    _buildPermissionBadge(doc),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        _buildPermissionBadge(doc),
+                        if (doc.isPublic) ...[
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(6)),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.public_rounded, size: 12, color: Colors.green.shade800),
+                                const SizedBox(width: 3),
+                                Text('Công khai', style: TextStyle(color: Colors.green.shade800, fontSize: 11, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ],
                 ),
                 if (doc.description.isNotEmpty) ...[
@@ -1422,6 +1954,28 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
                   Text(
                     doc.description,
                     style: TextStyle(fontSize: 13, color: Colors.grey.shade800),
+                  ),
+                ],
+                if (doc.tags.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  TagChips(tags: doc.tags, selected: _selectedTags, onTap: _toggleTag),
+                ],
+                if (doc.locationName != null || doc.hasLocation) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.place_rounded, size: 16, color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          doc.locationName ??
+                              '${doc.latitude!.toStringAsFixed(4)}, ${doc.longitude!.toStringAsFixed(4)}',
+                          style: TextStyle(fontSize: 12, color: Colors.grey.shade800),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
                 const SizedBox(height: 10),
@@ -1440,6 +1994,17 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
                     Text(
                       'Chủ sở hữu: ${doc.isOwner ? (_supabaseService?.currentUserEmail ?? "Bạn") : doc.ownerId}',
                       style: TextStyle(fontSize: 11, color: Colors.blue.shade700, fontWeight: FontWeight.w500),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.visibility_outlined, size: 13, color: Colors.grey.shade600),
+                        const SizedBox(width: 3),
+                        Text(
+                          '${doc.viewCount} lượt xem',
+                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -1480,6 +2045,7 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
                 ),
               ],
             ),
+          ),
           ),
         );
       },
