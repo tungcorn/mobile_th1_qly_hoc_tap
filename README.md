@@ -218,39 +218,44 @@ erDiagram
 ### 3.5. Thuật toán gợi ý cá nhân hóa (Recommendation Engine)
 Bộ máy gợi ý được thiết kế độc lập bằng Dart thuần (`lib/cloud/recommendationEngine.dart`), có khả năng kiểm thử đơn vị độc lập 100%.
 
-- **Xây dựng hồ sơ sở thích (User Profile)**:
-  Điểm số của từng tag $t$ được tích lũy theo hành vi người dùng:
-  $$\text{score}(t) = 1.0 \times N_{\text{owned}} + 1.5 \times N_{\text{viewed}} + 2.0 \times N_{\text{favorite}}$$
-  Sau đó chuẩn hóa về đoạn $[0, 1]$ bằng cách chia cho điểm tag cao nhất.
+**Xây dựng hồ sơ sở thích (User Profile):**
+Mỗi tag được cộng điểm tích lũy theo tương tác thực tế của người dùng, sau đó chia cho điểm tag cao nhất để chuẩn hóa về đoạn `[0, 1]`:
 
-- **Công thức tính điểm tài liệu ứng viên $c$**:
-  1. *Điểm nội dung (Cosine Tag Similarity)*:
-     $$\text{score}_{\text{raw}}(c) = \frac{\sum_{t \in \text{tags}(c) \cap \text{profile}} \text{profile}[t]}{\sqrt{|\text{tags}(c)|}}$$
-     $$\text{content}(c) = \frac{\text{score}_{\text{raw}}(c)}{\max_{c'} \text{score}_{\text{raw}}(c')}$$
-  2. *Điểm độ phổ biến (Log Popularity)*:
-     $$\text{pop}(c) = \frac{\ln(1 + \text{views}(c))}{\ln(1 + \max \text{views})}$$
-  3. *Điểm độ mới (Exponential Freshness Decay - chu kỳ bán rã 30 ngày)*:
-     $$\text{fresh}(c) = \exp\left(-\frac{\text{ageDays}}{30}\right)$$
-
-- **Tổng hợp điểm cuối cùng**:
-  - Khi đã có hồ sơ tương tác:
-    $$\text{Score}(c) = 0.7 \times \text{content}(c) + 0.2 \times \text{pop}(c) + 0.1 \times \text{fresh}(c)$$
-  - Trường hợp Cold-Start (người dùng mới, chưa có dữ liệu tương tác):
-    $$\text{Score}(c) = 0.7 \times \text{pop}(c) + 0.3 \times \text{fresh}(c)$$
-
+| Nguồn tương tác | Điểm cộng cho mỗi tag | Mô tả |
+|---|:---:|---|
+| Mỗi tài liệu sở hữu (`owned`) | **+1.0** | Tag của các tài liệu do chính người dùng tải lên |
+| Mỗi tài liệu đã xem (`viewed`) | **+1.5** | Tag của tài liệu công khai người dùng đã bấm xem chi tiết |
+| Mỗi tag yêu thích (`favorite`) | **+2.0** | Tag do người dùng chủ động chọn ưu tiên trong tab Khám phá |
 ```text
 score(t) = 1.0 * N_owned + 1.5 * N_viewed + 2.0 * N_favorite
+```
 
-content_raw(c) = Σ profile[t] (với t ∈ tags(c) ∩ profile) / √(số tag của c)
-content(c)     = content_raw(c) / max(content_raw)
+**Công thức tính điểm tài liệu ứng viên:**
+Với từng tài liệu ứng viên `c` (tài liệu công khai của sinh viên khác):
+
+```text
+content_raw(c) = Σ profile[t] (với t là tag của c trùng hồ sơ) / √(số tag của c)
+content(c)     = content_raw(c) / max(content_raw của mọi ứng viên)
 pop(c)         = ln(1 + view_count) / ln(1 + max_view_count)
 fresh(c)       = exp(-age_days / 30)
-
-Có hồ sơ:   Score = 0.7 * content + 0.2 * pop + 0.1 * fresh
-Cold-start: Score = 0.7 * pop     + 0.3 * fresh
 ```
-- **Giải trình minh bạch (Explainability)**:
-  Mỗi tài liệu gợi ý đều kèm lý do rõ ràng: `Trùng tag: #flutter, #dart`, `Phổ biến`, hoặc `Mới đăng`.
+
+**Tổng hợp điểm xếp hạng cuối cùng:**
+
+| Thành phần điểm | Trọng số khi có hồ sơ | Trọng số khi Cold-Start | Ý nghĩa kỹ thuật |
+|---|:---:|:---:|---|
+| Nội dung (`content`) | **70%** (0.7) | 0% | Độ tương đồng ngữ nghĩa tag theo chuẩn hóa Cosine |
+| Độ phổ biến (`pop`) | **20%** (0.2) | **70%** (0.7) | Số lượt xem tài liệu theo hàm logarithm tự nhiên |
+| Độ mới (`fresh`) | **10%** (0.1) | **30%** (0.3) | Bán rã theo thời gian thực (chu kỳ 30 ngày) |
+
+```text
+Có hồ sơ:   Score(c) = 0.7 * content(c) + 0.2 * pop(c) + 0.1 * fresh(c)
+Cold-start: Score(c) = 0.7 * pop(c)     + 0.3 * fresh(c)
+```
+
+- **Chuẩn hóa Cosine**: Việc chia cho `√(số tag)` giúp tài liệu gắn quá nhiều tag không bị chiếm ưu thế không công bằng so với tài liệu tập trung.
+- **Xử lý Cold-Start**: Khi người dùng mới chưa có lịch sử tương tác, hệ thống tự động loại bỏ điểm nội dung và tập trung vào mức độ phổ biến cùng độ mới.
+- **Giải trình minh bạch (Explainability)**: Mỗi tài liệu gợi ý đều hiển thị kèm lý do rõ ràng: `Trùng tag: #flutter, #dart`, `Phổ biến`, hoặc `Mới đăng`.
 
 ---
 
