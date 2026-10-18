@@ -306,6 +306,8 @@ Mọi thao tác truy xuất dữ liệu trên Supabase đều được kiểm so
 ```text
 mobile_th1_qly_hoc_tap/
 ├── .github/
+│   ├── workflows/
+│   │   └── ci-cd.yml                   # Quy trình tự động hóa CI/CD GitHub Actions
 │   └── pull_request_template.md        # Template chuẩn hóa khi tạo Pull Request
 ├── android/                            # Cấu hình native Android & FCM Service
 ├── lib/
@@ -445,6 +447,16 @@ flutter build web --release --dart-define-from-file=firebase_config.json
 flutter build apk --release --dart-define-from-file=firebase_config.json
 # Sản phẩm đầu ra tại: build/app/outputs/flutter-apk/app-release.apk
 ```
+
+### Quy trình tự động hóa CI/CD (GitHub Actions)
+Hệ thống tích hợp luồng tự động hóa hoàn chỉnh tại [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml):
+1. **Kiểm tra chất lượng (Continuous Integration)**: Tự động chạy `flutter analyze` và `flutter test` khi có commit hoặc Pull Request vào nhánh `master`.
+2. **Biên dịch & Đóng gói (Automated Build)**: Tự động biên dịch tệp `app-release.apk` và nén `web-build.zip`, lưu trữ artifacts trên GitHub Actions.
+3. **Tự động phát hành (Continuous Delivery)**: Khi hợp nhất vào nhánh `master` hoặc gắn thẻ tag, hệ thống tự động tạo **GitHub Release** bằng tiếng Việt, bao gồm:
+   - Ngày giờ khởi tạo theo múi giờ Việt Nam (`GMT+7`).
+   - Báo cáo chi tiết các thay đổi (Changelog) từ commit trước.
+   - Báo cáo chất lượng kiểm thử (Quality Gates đạt 100%).
+   - Đính kèm sẵn tệp cài đặt `app-release.apk` và gói `web-build.zip` để tải về trực tiếp.
 
 ---
 
