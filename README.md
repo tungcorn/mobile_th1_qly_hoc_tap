@@ -304,7 +304,7 @@ Mọi thao tác truy xuất dữ liệu trên Supabase đều được kiểm so
 ## 6. Cấu trúc thư mục dự án (Directory Structure)
 
 ```text
-mobile_th1_qly_hoc_tap/
+studydoc-manager/
 ├── .github/
 │   ├── workflows/
 │   │   └── ci-cd.yml                   # Quy trình tự động hóa CI/CD GitHub Actions
@@ -366,8 +366,8 @@ mobile_th1_qly_hoc_tap/
 
 #### Bước 1: Sao chép mã nguồn và Tải thư viện
 ```powershell
-git clone https://github.com/tungcorn/mobile_th1_qly_hoc_tap.git
-cd mobile_th1_qly_hoc_tap
+git clone https://github.com/tungcorn/studydoc-manager.git
+cd studydoc-manager
 
 # Cài đặt thư viện Dart & Flutter
 flutter pub get
