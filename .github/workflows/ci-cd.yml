@@ -143,17 +143,34 @@ jobs:
           name: web-build-zip
           path: .
 
-      - name: Khởi tạo thông tin phát hành tiếng Việt và Changelog
+      - name: Khởi tạo thông tin phát hành chuẩn theo tên repo và Changelog
         id: release_info
         run: |
-          # 1. Xác định thời gian phát hành theo giờ Việt Nam (GMT+7)
-          VN_TIME=$(TZ='Asia/Ho_Chi_Minh' date '+%d/%m/%Y %H:%M:%S (GMT+7)')
-          TAG_TIME=$(TZ='Asia/Ho_Chi_Minh' date '+%Y.%m.%d-%H%M')
+          # 1. Trích xuất tên repository và phiên bản từ pubspec.yaml
+          REPO_NAME="${{ github.event.repository.name }}"
+          APP_VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '\r' | cut -d'+' -f1 | xargs)
           SHORT_SHA=$(git rev-parse --short HEAD)
-          TAG_NAME="v${TAG_TIME}-${SHORT_SHA}"
+          VN_DATE=$(TZ='Asia/Ho_Chi_Minh' date '+%d/%m/%Y')
+          VN_TIME=$(TZ='Asia/Ho_Chi_Minh' date '+%d/%m/%Y %H:%M:%S (GMT+7)')
 
-          echo "VN_TIME=${VN_TIME}" >> $GITHUB_ENV
+          # Đặt tên tag và tiêu đề release chuẩn theo repo
+          TAG_NAME="v${APP_VERSION}-build.${{ github.run_number }}"
+          RELEASE_TITLE="${REPO_NAME} v${APP_VERSION} (${VN_DATE})"
+
+          # Đổi tên tệp đính kèm theo định danh repository
+          APK_FILE="${REPO_NAME}-v${APP_VERSION}-android.apk"
+          WEB_FILE="${REPO_NAME}-v${APP_VERSION}-web.zip"
+
+          cp app-release.apk "${APK_FILE}"
+          cp web-build.zip "${WEB_FILE}"
+
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+          echo "RELEASE_TITLE=${RELEASE_TITLE}" >> $GITHUB_ENV
+          echo "APK_FILE=${APK_FILE}" >> $GITHUB_ENV
+          echo "WEB_FILE=${WEB_FILE}" >> $GITHUB_ENV
+          echo "REPO_NAME=${REPO_NAME}" >> $GITHUB_ENV
+          echo "APP_VERSION=${APP_VERSION}" >> $GITHUB_ENV
+          echo "VN_TIME=${VN_TIME}" >> $GITHUB_ENV
 
           # 2. Trích xuất danh sách các thay đổi (Changelog)
           BEFORE_SHA="${{ github.event.before }}"
@@ -175,10 +192,12 @@ jobs:
           echo "$CHANGES" >> changelog.md
           echo "" >> changelog.md
 
-          # 3. Tạo toàn bộ nội dung Release Notes bằng tiếng Việt
-          echo "# Bản Phát Hành Tự Động (Continuous Delivery) - StudyDoc Manager" > release_notes_header.md
+          # 3. Tạo toàn bộ nội dung Release Notes theo định danh repository
+          echo "# ${REPO_NAME} - Phiên Bản Phát Hành v${APP_VERSION}" > release_notes_header.md
           echo "" >> release_notes_header.md
           echo "## Thông tin triển khai" >> release_notes_header.md
+          echo "- **Tên dự án**: \`${REPO_NAME}\`" >> release_notes_header.md
+          echo "- **Phiên bản**: \`v${APP_VERSION}\`" >> release_notes_header.md
           echo "- **Ngày giờ tạo**: \`${VN_TIME}\`" >> release_notes_header.md
           echo "- **Nhánh triển khai**: \`${{ github.ref_name }}\`" >> release_notes_header.md
           echo "- **Mã commit**: [\`${SHORT_SHA}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})" >> release_notes_header.md
@@ -199,8 +218,8 @@ jobs:
           echo "## Tệp đính kèm phân phối (Release Assets)" >> release_notes_footer.md
           echo "| Tệp đính kèm | Định dạng | Mục đích sử dụng |" >> release_notes_footer.md
           echo "|---|---|---|" >> release_notes_footer.md
-          echo "| \`app-release.apk\` | Android Application Package | Cài đặt trực tiếp trên điện thoại hoặc máy ảo Android |" >> release_notes_footer.md
-          echo "| \`web-build.zip\` | Web Archive Bundle | Triển khai trên máy chủ Web lưu trữ tĩnh (Static Hosting) |" >> release_notes_footer.md
+          echo "| \`${APK_FILE}\` | Android Package | Cài đặt trực tiếp trên điện thoại hoặc máy ảo Android |" >> release_notes_footer.md
+          echo "| \`${WEB_FILE}\` | Web Archive | Triển khai trên máy chủ Web lưu trữ tĩnh (Static Hosting) |" >> release_notes_footer.md
           echo "" >> release_notes_footer.md
           echo "---" >> release_notes_footer.md
           echo "*Bản phát hành được tự động biên dịch, kiểm thử và phát hành bởi GitHub Actions CI/CD Pipeline.*" >> release_notes_footer.md
@@ -211,11 +230,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
-          name: "Bản phát hành tự động [${{ env.VN_TIME }}]"
+          name: ${{ env.RELEASE_TITLE }}
           body_path: full_release_notes.md
           files: |
-            app-release.apk
-            web-build.zip
+            ${{ env.APK_FILE }}
+            ${{ env.WEB_FILE }}
           draft: false
           prerelease: false
         env:
