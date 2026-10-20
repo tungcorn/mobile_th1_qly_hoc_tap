@@ -105,11 +105,11 @@ END;
 $$;
 
 -- Kiểm tra chủ sở hữu (SECURITY DEFINER để tránh đệ quy RLS 42P17)
-CREATE OR REPLACE FUNCTION public.is_document_owner(doc_id uuid, uid text)
+CREATE OR REPLACE FUNCTION public.is_document_owner(doc_id uuid, user_uid text)
 RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   RETURN EXISTS (
-    SELECT 1 FROM public.documents WHERE id = doc_id AND owner_id = uid
+    SELECT 1 FROM public.documents WHERE id = doc_id AND owner_id = user_uid
   );
 END;
 $$;
