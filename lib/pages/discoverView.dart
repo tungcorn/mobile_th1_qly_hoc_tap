@@ -527,7 +527,7 @@ class _PublicDocCard extends StatelessWidget {
                 ),
               const SizedBox(height: CloudUi.tight),
               Text(
-                doc.ownerEmail ?? 'Không rõ chủ sở hữu',
+                doc.ownerEmail ?? (doc.ownerId.isNotEmpty ? doc.ownerId : 'Không rõ chủ sở hữu'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.bodySmall

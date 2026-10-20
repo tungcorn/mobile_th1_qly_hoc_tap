@@ -29,6 +29,7 @@ ALTER TABLE public.documents ADD COLUMN IF NOT EXISTS location_name text;
 ALTER TABLE public.documents ADD COLUMN IF NOT EXISTS latitude double precision;
 ALTER TABLE public.documents ADD COLUMN IF NOT EXISTS longitude double precision;
 ALTER TABLE public.documents ADD COLUMN IF NOT EXISTS is_public boolean NOT NULL DEFAULT false;
+ALTER TABLE public.documents ADD COLUMN IF NOT EXISTS owner_email text;
 ALTER TABLE public.documents ADD COLUMN IF NOT EXISTS view_count int NOT NULL DEFAULT 0;
 
 ALTER TABLE public.document_permissions ADD COLUMN IF NOT EXISTS expires_at timestamptz;

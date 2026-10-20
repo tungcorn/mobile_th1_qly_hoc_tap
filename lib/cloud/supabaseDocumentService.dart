@@ -76,7 +76,11 @@ class SupabaseDocument {
   bool get hasLocation => latitude != null && longitude != null;
 
   /// Các cột TH2 có thể chưa tồn tại (chưa chạy migration) -> dùng giá trị mặc định
-  factory SupabaseDocument.fromMap(Map<String, dynamic> map, {String currentUserId = ''}) {
+  factory SupabaseDocument.fromMap(
+    Map<String, dynamic> map, {
+    String currentUserId = '',
+    String? resolvedOwnerEmail,
+  }) {
     final ownerId = map['owner_id']?.toString() ?? '';
     String perm = 'viewer';
     if (ownerId == currentUserId) {
@@ -98,7 +102,7 @@ class SupabaseDocument {
       mimeType: map['mime_type']?.toString() ?? 'application/octet-stream',
       createdAt: DateTime.tryParse(map['created_at']?.toString() ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(map['updated_at']?.toString() ?? '') ?? DateTime.now(),
-      ownerEmail: map['owner_email']?.toString(),
+      ownerEmail: resolvedOwnerEmail ?? map['owner_email']?.toString(),
       permissionLevel: perm,
       tags: _parseTags(map['tags']),
       locationName: (locationName == null || locationName.isEmpty) ? null : locationName,
@@ -300,9 +304,54 @@ class SupabaseDocumentService {
         'avatar_url': avatarUrl,
         'updated_at': DateTime.now().toIso8601String(),
       });
+      _userEmailCache[currentUserId] = _myEmail;
     } catch (e) {
       debugPrint('Supabase syncUserProfile error: $e');
     }
+  }
+
+  /// Bộ nhớ đệm thông tin email của người dùng (tránh truy vấn lại nhiều lần)
+  static final Map<String, String> _userEmailCache = {
+    'user_a_owner': 'sinhvien_a@studydoc.edu.vn',
+    'user_b_shared': 'sinhvien_b@studydoc.edu.vn',
+    'user_c_stranger': 'sinhvien_c@studydoc.edu.vn',
+  };
+
+  /// Tra cứu email của các chủ sở hữu từ bảng users
+  Future<Map<String, String>> _resolveOwnerEmails(Iterable<String> ownerIds) async {
+    final Map<String, String> result = Map.of(_userEmailCache);
+    if (currentUserId.isNotEmpty && currentUserEmail.isNotEmpty) {
+      result[currentUserId] = currentUserEmail;
+      _userEmailCache[currentUserId] = currentUserEmail;
+    }
+
+    final missingIds = ownerIds
+        .where((id) => id.isNotEmpty && !result.containsKey(id))
+        .toSet()
+        .toList();
+
+    if (missingIds.isEmpty) return result;
+
+    try {
+      final List<dynamic> users = await _client
+          .from('users')
+          .select('id, email')
+          .inFilter('id', missingIds);
+      for (final u in users) {
+        if (u is Map) {
+          final id = u['id']?.toString();
+          final email = u['email']?.toString();
+          if (id != null && email != null && email.isNotEmpty) {
+            result[id] = email;
+            _userEmailCache[id] = email;
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Supabase resolveOwnerEmails notice: $e');
+    }
+
+    return result;
   }
 
   /// 2. Lấy danh sách tài liệu của tôi + được chia sẻ (không gồm tài liệu chỉ công khai)
@@ -340,6 +389,9 @@ class SupabaseDocumentService {
       );
       final List<dynamic> records = await query.order('created_at', ascending: false);
 
+      final ownerIds = records.map((r) => (r as Map)['owner_id']?.toString() ?? '').where((id) => id.isNotEmpty);
+      final ownerEmails = await _resolveOwnerEmails(ownerIds);
+
       final List<SupabaseDocument> docs = [];
       for (final r in records) {
         final map = Map<String, dynamic>.from(r as Map);
@@ -356,7 +408,12 @@ class SupabaseDocumentService {
           map['permission_level'] = perm;
         }
 
-        docs.add(SupabaseDocument.fromMap(map, currentUserId: currentUserId));
+        final ownerId = map['owner_id']?.toString() ?? '';
+        docs.add(SupabaseDocument.fromMap(
+          map,
+          currentUserId: currentUserId,
+          resolvedOwnerEmail: ownerEmails[ownerId],
+        ));
       }
 
       return docs;
@@ -378,8 +435,20 @@ class SupabaseDocumentService {
         tags: tags,
       );
       final List<dynamic> records = await query.order('created_at', ascending: false);
+
+      final ownerIds = records.map((r) => (r as Map)['owner_id']?.toString() ?? '').where((id) => id.isNotEmpty);
+      final ownerEmails = await _resolveOwnerEmails(ownerIds);
+
       return records
-          .map((r) => SupabaseDocument.fromMap(Map<String, dynamic>.from(r as Map), currentUserId: currentUserId))
+          .map((r) {
+            final map = Map<String, dynamic>.from(r as Map);
+            final ownerId = map['owner_id']?.toString() ?? '';
+            return SupabaseDocument.fromMap(
+              map,
+              currentUserId: currentUserId,
+              resolvedOwnerEmail: ownerEmails[ownerId],
+            );
+          })
           .toList();
     } catch (e) {
       debugPrint('Supabase getPublicDocuments error: $e');
@@ -486,7 +555,7 @@ class SupabaseDocumentService {
         if (isPublic) 'is_public': true,
       }).select().single();
 
-      return SupabaseDocument.fromMap(record, currentUserId: currentUserId);
+      return SupabaseDocument.fromMap(record, currentUserId: currentUserId, resolvedOwnerEmail: currentUserEmail);
     } catch (e) {
       debugPrint('Supabase createDocument error: $e');
       throw _friendlyError(e, 'tạo tài liệu');

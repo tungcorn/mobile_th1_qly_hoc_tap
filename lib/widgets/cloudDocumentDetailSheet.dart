@@ -249,7 +249,7 @@ class _CloudDocumentDetailState extends State<_CloudDocumentDetail> {
           ],
           const SizedBox(height: CloudUi.medium),
           _info(Icons.person_outline_rounded, 'Chủ sở hữu',
-              doc.isOwner ? 'Bạn' : (doc.ownerEmail ?? 'Không rõ')),
+              doc.isOwner ? 'Bạn' : (doc.ownerEmail ?? (doc.ownerId.isNotEmpty ? doc.ownerId : 'Không rõ'))),
           _info(Icons.insert_drive_file_outlined, 'Tệp',
               doc.fileName.isEmpty ? 'Không rõ' : doc.fileName),
           _info(Icons.straighten_rounded, 'Kích thước', _formatSize(doc.fileSize)),

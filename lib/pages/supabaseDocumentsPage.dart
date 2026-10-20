@@ -1089,7 +1089,7 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
       } else {
         // Tải nội dung tệp từ bộ đệm tài liệu
         bytes = Uint8List.fromList(
-          utf8.encode('Tài liệu: ${doc.title}\nTệp: ${doc.fileName}\nMô tả: ${doc.description}\nChủ sở hữu: ${doc.ownerId}\nURL Cloud: ${doc.fileUrl}\nThời gian: ${doc.createdAt}\n'),
+          utf8.encode('Tài liệu: ${doc.title}\nTệp: ${doc.fileName}\nMô tả: ${doc.description}\nChủ sở hữu: ${doc.ownerEmail ?? doc.ownerId}\nURL Cloud: ${doc.fileUrl}\nThời gian: ${doc.createdAt}\n'),
         );
       }
 
@@ -1992,7 +1992,7 @@ class _SupabaseDocumentsPageState extends State<SupabaseDocumentsPage> with Sing
                       style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                     ),
                     Text(
-                      'Chủ sở hữu: ${doc.isOwner ? (_supabaseService?.currentUserEmail ?? "Bạn") : doc.ownerId}',
+                      'Chủ sở hữu: ${doc.isOwner ? (_supabaseService?.currentUserEmail ?? "Bạn") : (doc.ownerEmail ?? doc.ownerId)}',
                       style: TextStyle(fontSize: 11, color: Colors.blue.shade700, fontWeight: FontWeight.w500),
                     ),
                     Row(
