@@ -1127,7 +1127,8 @@ $$;"""
         "nâng cao năng lực tìm kiếm ngữ nghĩa cho sinh viên."
     )
     
-    output_path = r"D:\Hoc\Android\TH\th1_qly_hoc_tap\BAO_CAO_HE_THONG_QUAN_LY_TAI_LIEU_FLUTTER_FIREBASE_SUPABASE.docx"
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    output_path = os.path.join(base_dir, "BAO_CAO_HE_THONG_QUAN_LY_TAI_LIEU_FLUTTER_FIREBASE_SUPABASE.docx")
     doc.save(output_path)
     print("Docx report generated successfully at:", output_path)
 
