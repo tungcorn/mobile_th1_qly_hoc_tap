@@ -148,7 +148,7 @@ class _MetricSegment extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeInOut,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           decoration: BoxDecoration(
             color: isActive
                 ? theme.colorScheme.surface
@@ -174,36 +174,36 @@ class _MetricSegment extends StatelessWidget {
             children: [
               Icon(
                 displayedIcon,
-                size: 16.5,
+                size: 15,
                 color: isActive ? activeColor : theme.colorScheme.onSurface.withOpacity(0.65),
               ),
-              const SizedBox(width: 7),
+              const SizedBox(width: 4),
               Flexible(
                 child: Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12.5,
+                    fontSize: 12,
                     fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                     color: isActive ? activeColor : theme.colorScheme.onSurface.withOpacity(0.85),
                   ),
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               // Huy hiệu số lượng tài liệu
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                 decoration: BoxDecoration(
                   color: isActive
                       ? activeColor.withOpacity(0.14)
                       : theme.colorScheme.surfaceContainerHighest.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   '$count',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 10.5,
                     fontWeight: FontWeight.w700,
                     color: isActive ? activeColor : theme.colorScheme.onSurface.withOpacity(0.7),
                   ),
@@ -211,17 +211,17 @@ class _MetricSegment extends StatelessWidget {
               ),
               // Huy hiệu cảnh báo quá hạn (nếu có bài tập quá hạn)
               if (badgeCount != null && badgeCount! > 0) ...[
-                const SizedBox(width: 4),
+                const SizedBox(width: 3),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                   decoration: BoxDecoration(
                     color: AppColors.errorContainer,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     '$badgeCount!',
                     style: const TextStyle(
-                      fontSize: 10,
+                      fontSize: 9.5,
                       fontWeight: FontWeight.w800,
                       color: AppColors.error,
                     ),

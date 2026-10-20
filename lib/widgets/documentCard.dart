@@ -180,10 +180,14 @@ class DocumentCard extends StatelessWidget {
 
               // Hàng 4: Metadata chân thẻ (Deadline, Định dạng tệp, Thời gian cập nhật)
               const SizedBox(height: 8),
-              Row(
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                runSpacing: 5,
                 children: [
                   // Nhãn Deadline (nếu có)
-                  if (deadlineStatus != null) ...[
+                  if (deadlineStatus != null)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
@@ -201,24 +205,26 @@ class DocumentCard extends StatelessWidget {
                             color: deadlineStatus['color'] as Color,
                           ),
                           const SizedBox(width: 4),
-                          Text(
-                            doc.isCompleted
-                                ? 'Đã hoàn thành'
-                                : '${deadlineStatus['label']} (${AppFunctions.formatDate(doc.deadline)})',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: deadlineStatus['color'] as Color,
+                          Flexible(
+                            child: Text(
+                              doc.isCompleted
+                                  ? 'Đã hoàn thành'
+                                  : '${deadlineStatus['label']} (${AppFunctions.formatDate(doc.deadline)})',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: deadlineStatus['color'] as Color,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                  ],
 
                   // Nhãn Định dạng & Dung lượng tệp
-                  if (doc.fileType.isNotEmpty || doc.fileSize > 0) ...[
+                  if (doc.fileType.isNotEmpty || doc.fileSize > 0)
                     Text(
                       doc.fileType.isNotEmpty
                           ? (doc.fileSize > 0
@@ -230,9 +236,6 @@ class DocumentCard extends StatelessWidget {
                         color: theme.colorScheme.onSurface.withOpacity(0.45),
                       ),
                     ),
-                  ],
-
-                  const Spacer(),
 
                   // Thời gian cập nhật tương đối
                   Text(
