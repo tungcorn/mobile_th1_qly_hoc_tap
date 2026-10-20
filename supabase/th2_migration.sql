@@ -71,8 +71,17 @@ CREATE INDEX IF NOT EXISTS idx_views_user ON public.document_views(user_id, view
 CREATE INDEX IF NOT EXISTS idx_views_document ON public.document_views(document_id);
 
 -- -----------------------------------------------------------------------------
--- 4. HÀM TRỢ GIÚP (giữ nguyên chữ ký & kiểu trả về như bản TH1)
+-- 4. HÀM TRỢ GIÚP
 -- -----------------------------------------------------------------------------
+-- Thu hồi hàm cũ kèm các policy phụ thuộc (triệt tiêu lỗi 42P13 khi nâng cấp từ các bản cũ)
+DROP FUNCTION IF EXISTS public.check_user_document_permission(uuid, text) CASCADE;
+DROP FUNCTION IF EXISTS public.check_user_document_permission(uuid, text, text) CASCADE;
+DROP FUNCTION IF EXISTS public.is_document_owner(uuid, text) CASCADE;
+DROP FUNCTION IF EXISTS public.is_document_public(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.document_owner_id(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.record_document_view(uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.current_app_user_id() CASCADE;
+DROP FUNCTION IF EXISTS public.current_app_user_email() CASCADE;
 -- User ID: header x-user-id, fallback auth.uid()
 CREATE OR REPLACE FUNCTION public.current_app_user_id()
 RETURNS text LANGUAGE sql STABLE AS $$
