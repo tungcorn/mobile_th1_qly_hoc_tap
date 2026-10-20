@@ -1,6 +1,6 @@
 # Thư mục Tài liệu Báo cáo Word (DOCX)
 
-Thư mục này tập trung toàn bộ các tài liệu báo cáo kỹ thuật định dạng Microsoft Word (`.docx`) của dự án **StudyDoc Manager**, cùng mã nguồn Python tự động sinh báo cáo chuẩn học thuật.
+Thư mục này tập trung toàn bộ các tài liệu báo cáo kỹ thuật định dạng Microsoft Word (`.docx`) hoàn chỉnh của dự án **StudyDoc Manager**.
 
 ---
 
@@ -16,20 +16,21 @@ Thư mục này tập trung toàn bộ các tài liệu báo cáo kỹ thuật �
 
 ## 2. Mã nguồn Sinh Báo cáo Tự động (Python)
 
-Các báo cáo trên được sinh tự động thông qua thư viện `python-docx` với chuẩn trình bày văn bản khoa học (typography chuyên nghiệp, bảng biểu đối chiếu, hộp ghi chú callout, định dạng đoạn code):
+Mã nguồn Python sinh các tài liệu Word trên được quản lý tập trung tại thư mục `scripts/`:
 
-* **`generate_th2_checklist_report_docx.py`**: Sinh báo cáo nghiệm thu 6 mục Checklist TH2.
-* **`generate_cloud_report_docx.py`**: Sinh báo cáo tích hợp hệ sinh thái Cloud.
-* **`create_academic_docx.py`**: Sinh báo cáo kiến trúc Cashew TH1.
+* **`scripts/generate_th2_checklist_report_docx.py`**: Sinh báo cáo nghiệm thu 6 mục Checklist TH2.
+* **`scripts/generate_cloud_report_docx.py`**: Sinh báo cáo tích hợp hệ sinh thái Cloud.
+* **`scripts/create_academic_docx.py`**: Sinh báo cáo kiến trúc Cashew TH1.
 
 ### Lệnh chạy sinh lại báo cáo khi cần cập nhật:
 ```powershell
 # Sinh báo cáo nghiệm thu TH2 (Checklist 6 mục)
-uv run --with python-docx python docx/generate_th2_checklist_report_docx.py
+uv run --with python-docx python scripts/generate_th2_checklist_report_docx.py
 
 # Sinh báo cáo Cloud TH2
-uv run --with python-docx python docx/generate_cloud_report_docx.py
+uv run --with python-docx python scripts/generate_cloud_report_docx.py
 
 # Sinh báo cáo Cashew TH1
-uv run --with python-docx python docx/create_academic_docx.py
+uv run --with python-docx python scripts/create_academic_docx.py
 ```
+

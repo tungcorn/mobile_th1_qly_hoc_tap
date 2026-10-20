@@ -449,8 +449,11 @@ def build_docx_report():
     doc.add_paragraph("Thông qua bài thực hành TH1, đồ án đã triển khai thành công ứng dụng Quản lý Tài liệu Học tập đáp ứng chặt chẽ các nguyên lý cốt lõi của kiến trúc Cashew. Dự án phân tách độc lập và rõ ràng giữa tầng lưu trữ dữ liệu (Database Layer), tầng logic nghiệp vụ (Struct Layer) và tầng giao diện người dùng (Pages & Widgets Layer).")
     doc.add_paragraph("Giao diện ứng dụng được thiết kế theo hướng tối giản, trang nhã, loại bỏ các chi tiết thừa thãi và tập trung vào trải nghiệm tra cứu học tập của sinh viên. Toàn bộ 5/5 mục tiêu trong Checklist đánh giá đã được hoàn thành đầy đủ, với minh chứng cụ thể gồm: mã nguồn sạch, kết quả kiểm thử tự động đạt 12/12 test cases và sản phẩm cài đặt Android dạng tệp APK bản release đã được ký số.")
     
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    output_path = os.path.join(base_dir, "BAO_CAO_TH1_KIEN_TRUC_CASHEW.docx")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    output_dir = os.path.join(project_root, "docx")
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, "BAO_CAO_TH1_KIEN_TRUC_CASHEW.docx")
     doc.save(output_path)
     print(f"Academic report saved successfully to: {output_path}")
 

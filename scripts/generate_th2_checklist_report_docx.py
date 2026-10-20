@@ -1050,8 +1050,11 @@ WHERE is_public = true AND tags @> ARRAY['flutter', 'sqlite'];""", language="SQL
         "4. Gom cụm bản đồ (Marker Clustering): Tích hợp tính năng gom cụm thông minh khi bản đồ hiển thị hàng trăm địa điểm tài liệu gần nhau trong cùng một khuôn viên trường đại học."
     )
     
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    output_filename = os.path.join(base_dir, "BAO_CAO_TH2_HE_THONG_QUAN_LY_TAI_LIEU_DA_NEN_TANG.docx")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)
+    output_dir = os.path.join(project_root, "docx")
+    os.makedirs(output_dir, exist_ok=True)
+    output_filename = os.path.join(output_dir, "BAO_CAO_TH2_HE_THONG_QUAN_LY_TAI_LIEU_DA_NEN_TANG.docx")
     doc.save(output_filename)
     print(f"SUCCESS: File {output_filename} generated successfully!")
 
