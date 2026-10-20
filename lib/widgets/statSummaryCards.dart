@@ -3,7 +3,8 @@ import '../colors.dart';
 import '../struct/documentService.dart';
 
 /// [StatSummaryCards]: Thanh tóm tắt số liệu tối giản, thanh lịch theo chuẩn Material Design 3.
-/// Thiết kế dạng Segmented Bar gọn gàng, giảm thiểu diện tích chiếm dụng và không gây rối mắt.
+/// Thiết kế dạng Segmented Bar gọn gàng, icon + nhãn chữ + số đếm nằm trên cùng một hàng ngang,
+/// giúp giao diện trực quan, khoa học và không bị lệch chữ hay kéo dãn bất hợp lý trên màn hình lớn.
 class StatSummaryCards extends StatelessWidget {
   final DocumentStats stats;
   final bool isPendingActive;
@@ -27,71 +28,86 @@ class StatSummaryCards extends StatelessWidget {
     final theme = Theme.of(context);
     final isAllActive = !isPendingActive && !isFavoriteActive;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: theme.colorScheme.outlineVariant.withOpacity(0.7),
-            width: 1,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1080),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Container(
+            height: 48,
+            padding: const EdgeInsets.all(3.5),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: theme.colorScheme.outlineVariant.withOpacity(0.55),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                // 1. Phân đoạn: Tổng tài liệu
+                Expanded(
+                  child: _MetricSegment(
+                    label: 'Tài liệu',
+                    count: stats.totalCount,
+                    icon: Icons.folder_outlined,
+                    activeIcon: Icons.folder_rounded,
+                    isActive: isAllActive,
+                    activeColor: theme.colorScheme.primary,
+                    onTap: onTotalTap,
+                  ),
+                ),
+                if (!isAllActive && !isPendingActive)
+                  VerticalDivider(
+                    width: 1,
+                    thickness: 1,
+                    indent: 8,
+                    endIndent: 8,
+                    color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                  )
+                else
+                  const SizedBox(width: 3),
+
+                // 2. Phân đoạn: Bài tập chờ
+                Expanded(
+                  child: _MetricSegment(
+                    label: 'Bài tập chờ',
+                    count: stats.pendingAssignmentCount,
+                    icon: Icons.assignment_outlined,
+                    activeIcon: Icons.assignment_rounded,
+                    isActive: isPendingActive,
+                    activeColor: stats.overdueAssignmentCount > 0 ? AppColors.error : AppColors.secondary,
+                    badgeCount: stats.overdueAssignmentCount > 0 ? stats.overdueAssignmentCount : null,
+                    onTap: onPendingTap,
+                  ),
+                ),
+                if (!isPendingActive && !isFavoriteActive)
+                  VerticalDivider(
+                    width: 1,
+                    thickness: 1,
+                    indent: 8,
+                    endIndent: 8,
+                    color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                  )
+                else
+                  const SizedBox(width: 3),
+
+                // 3. Phân đoạn: Quan trọng
+                Expanded(
+                  child: _MetricSegment(
+                    label: 'Quan trọng',
+                    count: stats.favoriteCount,
+                    icon: Icons.star_border_rounded,
+                    activeIcon: Icons.star_rounded,
+                    isActive: isFavoriteActive,
+                    activeColor: AppColors.tertiary,
+                    onTap: onFavoriteTap,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            // 1. Phân đoạn: Tổng tài liệu
-            Expanded(
-              child: _MetricSegment(
-                label: 'Tài liệu',
-                count: stats.totalCount,
-                icon: Icons.folder_outlined,
-                isActive: isAllActive,
-                activeColor: theme.colorScheme.primary,
-                onTap: onTotalTap,
-              ),
-            ),
-            VerticalDivider(
-              width: 1,
-              thickness: 1,
-              indent: 8,
-              endIndent: 8,
-              color: theme.colorScheme.outlineVariant.withOpacity(0.5),
-            ),
-
-            // 2. Phân đoạn: Bài tập chờ
-            Expanded(
-              child: _MetricSegment(
-                label: 'Bài tập chờ',
-                count: stats.pendingAssignmentCount,
-                icon: Icons.assignment_outlined,
-                isActive: isPendingActive,
-                activeColor: stats.overdueAssignmentCount > 0 ? AppColors.error : AppColors.tertiary,
-                badgeCount: stats.overdueAssignmentCount > 0 ? stats.overdueAssignmentCount : null,
-                onTap: onPendingTap,
-              ),
-            ),
-            VerticalDivider(
-              width: 1,
-              thickness: 1,
-              indent: 8,
-              endIndent: 8,
-              color: theme.colorScheme.outlineVariant.withOpacity(0.5),
-            ),
-
-            // 3. Phân đoạn: Quan trọng
-            Expanded(
-              child: _MetricSegment(
-                label: 'Quan trọng',
-                count: stats.favoriteCount,
-                icon: Icons.star_border_rounded,
-                isActive: isFavoriteActive,
-                activeColor: AppColors.tertiary,
-                onTap: onFavoriteTap,
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -102,6 +118,7 @@ class _MetricSegment extends StatelessWidget {
   final String label;
   final int count;
   final IconData icon;
+  final IconData? activeIcon;
   final bool isActive;
   final Color activeColor;
   final int? badgeCount;
@@ -111,6 +128,7 @@ class _MetricSegment extends StatelessWidget {
     required this.label,
     required this.count,
     required this.icon,
+    this.activeIcon,
     required this.isActive,
     required this.activeColor,
     this.badgeCount,
@@ -120,76 +138,98 @@ class _MetricSegment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final displayedIcon = isActive ? (activeIcon ?? icon) : icon;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(11),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: isActive ? activeColor.withOpacity(0.08) : Colors.transparent,
-          borderRadius: BorderRadius.circular(11),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isActive ? activeColor : theme.colorScheme.onSurface.withOpacity(0.6),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: isActive
+                ? theme.colorScheme.surface
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isActive ? activeColor.withOpacity(0.35) : Colors.transparent,
+              width: 1.2,
             ),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '$count',
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: isActive ? activeColor : theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      if (badgeCount != null) ...[
-                        const SizedBox(width: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: AppColors.errorContainer,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            '$badgeCount!',
-                            style: const TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.error,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: theme.shadowColor.withOpacity(0.06),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1.5),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                displayedIcon,
+                size: 16.5,
+                color: isActive ? activeColor : theme.colorScheme.onSurface.withOpacity(0.65),
+              ),
+              const SizedBox(width: 7),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    color: isActive ? activeColor : theme.colorScheme.onSurface.withOpacity(0.85),
                   ),
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                      color: isActive ? activeColor : theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+              const SizedBox(width: 6),
+              // Huy hiệu số lượng tài liệu
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? activeColor.withOpacity(0.14)
+                      : theme.colorScheme.surfaceContainerHighest.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isActive ? activeColor : theme.colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
+              ),
+              // Huy hiệu cảnh báo quá hạn (nếu có bài tập quá hạn)
+              if (badgeCount != null && badgeCount! > 0) ...[
+                const SizedBox(width: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  decoration: BoxDecoration(
+                    color: AppColors.errorContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '$badgeCount!',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.error,
                     ),
                   ),
-                ],
-              ),
-            ),
-          ],
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );

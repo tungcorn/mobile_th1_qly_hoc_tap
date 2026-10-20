@@ -216,8 +216,11 @@ class _HomePageState extends State<HomePage> {
         icon: const Icon(Icons.add_rounded, size: 20),
         label: const Text('Thêm tài liệu', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
       ),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1080),
+          child: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             // 1. Thanh tóm tắt số liệu tối giản (Segmented Metric Bar)
             SliverToBoxAdapter(
@@ -429,6 +432,8 @@ class _HomePageState extends State<HomePage> {
               },
             );
           },
+        ),
+      ),
         ),
       ),
     );

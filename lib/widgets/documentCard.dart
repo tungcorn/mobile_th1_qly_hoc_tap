@@ -61,59 +61,67 @@ class DocumentCard extends StatelessWidget {
             children: [
               // Hàng 1: Môn học • Phân loại  +  Nút Yêu thích & Menu (...)
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Dấu chấm màu môn học
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: BoxDecoration(
-                      color: item.subjectColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Dấu chấm màu môn học
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: item.subjectColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
 
-                  // Tên / Mã môn học
-                  Flexible(
-                    child: Text(
-                      item.subjectCode.isNotEmpty ? item.subjectCode : item.subjectName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onSurface.withOpacity(0.75),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '•',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: theme.colorScheme.onSurface.withOpacity(0.4),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
+                        // Tên / Mã môn học
+                        Flexible(
+                          child: Text(
+                            item.subjectCode.isNotEmpty ? item.subjectCode : item.subjectName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.onSurface.withOpacity(0.75),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '•',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: theme.colorScheme.onSurface.withOpacity(0.4),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
 
-                  // Huy hiệu loại tài liệu dạng tonal tinh tế
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                    decoration: BoxDecoration(
-                      color: item.type.containerColor.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      item.type.displayName,
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: item.type.color,
-                      ),
+                        // Huy hiệu loại tài liệu dạng tonal tinh tế
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: item.type.containerColor.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            item.type.displayName,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: item.type.color,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
-                  const Spacer(),
+                  const SizedBox(width: 8),
 
                   // Nút Đánh dấu quan trọng (Sao)
                   IconButton(
