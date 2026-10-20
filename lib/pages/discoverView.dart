@@ -61,11 +61,11 @@ class _DiscoverViewState extends State<DiscoverView> {
       ]);
       if (!mounted) return;
       _accessible = results[0] as List<SupabaseDocument>;
-      // Chỉ giữ tài liệu công khai mà tôi chưa có quyền (quyền 'none')
-      final accessibleIds = _accessible.map((d) => d.id).toSet();
+      // Hiển thị tất cả tài liệu công khai của người khác; nếu đã được cấp quyền thì giữ quyền, chưa có thì gán 'none'
+      final accessibleMap = {for (final d in _accessible) d.id: d};
       _public = [
         for (final d in results[1] as List<SupabaseDocument>)
-          if (!accessibleIds.contains(d.id)) documentWithPermission(d, 'none'),
+          accessibleMap[d.id] ?? documentWithPermission(d, 'none'),
       ];
       _viewedIds = results[2] as List<String>;
       _allTags = results[3] as List<String>;
@@ -98,10 +98,13 @@ class _DiscoverViewState extends State<DiscoverView> {
         .where((d) => viewedSet.contains(d.id))
         .map(_toRec)
         .toList();
-    final candidates = [
-      ..._public,
-      ..._accessible.where((d) => !d.isOwner),
-    ].map(_toRec).toList();
+    final candidateIds = <String>{};
+    final candidates = <RecItem>[];
+    for (final d in [..._public, ..._accessible.where((d) => !d.isOwner)]) {
+      if (candidateIds.add(d.id)) {
+        candidates.add(_toRec(d));
+      }
+    }
     _recs = RecommendationEngine.recommend(
       userId: widget.service.currentUserId,
       owned: owned,
@@ -511,12 +514,37 @@ class _PublicDocCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                doc.title.isEmpty ? '(Không có tiêu đề)' : doc.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      doc.title.isEmpty ? '(Không có tiêu đề)' : doc.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  if (doc.permissionLevel == 'viewer' || doc.permissionLevel == 'editor') ...[
+                    const SizedBox(width: CloudUi.tight),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Colors.green.shade300, width: 0.8),
+                      ),
+                      child: Text(
+                        'Đã có quyền',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.green.shade800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
               if (doc.description.isNotEmpty)
                 Text(
