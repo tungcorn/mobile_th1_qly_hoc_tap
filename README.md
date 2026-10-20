@@ -350,9 +350,14 @@ studydoc-manager/
 │   ├── supabase_documents_page_test.dart # Widget test responsive (400px vs 1300px)
 │   └── widget_test.dart                # Widget test giao diện người dùng
 ├── web/                                # Cấu hình ứng dụng Flutter Web
-├── BAO_CAO_TH2_QUAN_LY_TAI_LIEU_DA_NEN_TANG.md # Báo cáo học thuật chi tiết TH2
-├── HUONG_DAN_CHAY_TH2.md               # Hướng dẫn thiết lập & chạy chi tiết
-├── KICH_BAN_QUAY_VIDEO_TH2.md          # Kịch bản demo video 8-12 phút
+├── docs/                               # Tài liệu kỹ thuật, hướng dẫn & báo cáo Markdown
+│   ├── BAO_CAO_TH2_QUAN_LY_TAI_LIEU_DA_NEN_TANG.md # Báo cáo học thuật chi tiết TH2
+│   ├── HUONG_DAN_CHAY_TH2.md           # Hướng dẫn thiết lập & chạy chi tiết
+│   ├── KICH_BAN_QUAY_VIDEO_TH2.md      # Kịch bản demo video 8-12 phút
+│   └── ...                             # Các tài liệu phân tích & kịch bản khác
+├── docx/                               # Báo cáo chính thức định dạng Word (.docx)
+│   ├── BAO_CAO_TH2_HE_THONG_QUAN_LY_TAI_LIEU_DA_NEN_TANG.docx # Báo cáo nghiệm thu 6 mục TH2
+│   └── ...
 ├── pubspec.yaml                        # Quản lý dependencies Flutter
 └── README.md                           # Tài liệu tổng quan dự án
 ```
@@ -469,10 +474,16 @@ Hệ thống tích hợp luồng tự động hóa hoàn chỉnh tại [`.github
 
 Để phục vụ công tác chấm điểm và đối chiếu kỹ thuật chi tiết của Hội đồng Giảng viên, vui lòng tham khảo các báo cáo chuyên sâu:
 
-1. [BAO_CAO_TH2_QUAN_LY_TAI_LIEU_DA_NEN_TANG.md](BAO_CAO_TH2_QUAN_LY_TAI_LIEU_DA_NEN_TANG.md): Báo cáo kỹ thuật chi tiết bài thực hành 2 (Kiến trúc RLS, công thức toán học thuật toán gợi ý, phân tích responsive 4 kích thước màn hình, đánh giá rủi ro bảo mật).
-2. [HUONG_DAN_CHAY_TH2.md](HUONG_DAN_CHAY_TH2.md): Cẩm nang hướng dẫn từng bước cấu hình tài nguyên Cloud (Supabase Migration, Edge Function, Firebase FCM VAPID Key).
-3. [KICH_BAN_QUAY_VIDEO_TH2.md](KICH_BAN_QUAY_VIDEO_TH2.md): Kịch bản quay video minh chứng thực nghiệm thời lượng 8 - 12 phút (đầy đủ các bước demo phân quyền, mượn trả realtime giữa 2 tài khoản, bản đồ và gợi ý).
-4. [PHAN_TICH_TICH_HOP_CLOUD_DMS.md](PHAN_TICH_TICH_HOP_CLOUD_DMS.md): Tài liệu phân tích kiến trúc tích hợp Cloud BaaS bài thực hành 1.
+### 10.1. Báo cáo Word (.docx) trong thư mục docx/
+- [BAO_CAO_TH2_HE_THONG_QUAN_LY_TAI_LIEU_DA_NEN_TANG.docx](docx/BAO_CAO_TH2_HE_THONG_QUAN_LY_TAI_LIEU_DA_NEN_TANG.docx): **Báo cáo nghiệm thu chính thức theo 6 mục Checklist TH2** (Kiến trúc Hybrid Cloud, Giao diện Responsive Mobile/Web, Tag GIN Index & OpenStreetMap, Luồng Mượn/Duyệt & Quyền RLS có hạn, Thuật toán Recommendation Cosine-Tag, Kiểm thử 29/29 Pass & CI/CD).
+- [BAO_CAO_HE_THONG_QUAN_LY_TAI_LIEU_FLUTTER_FIREBASE_SUPABASE.docx](docx/BAO_CAO_HE_THONG_QUAN_LY_TAI_LIEU_FLUTTER_FIREBASE_SUPABASE.docx): Báo cáo kỹ thuật chi tiết tích hợp Cloud Firebase + Supabase.
+- [BAO_CAO_TH1_KIEN_TRUC_CASHEW.docx](docx/BAO_CAO_TH1_KIEN_TRUC_CASHEW.docx): Báo cáo kiến trúc phân tầng Cashew bài thực hành 1.
+
+### 10.2. Tài liệu kỹ thuật Markdown (.md) trong thư mục docs/
+1. [BAO_CAO_TH2_QUAN_LY_TAI_LIEU_DA_NEN_TANG.md](docs/BAO_CAO_TH2_QUAN_LY_TAI_LIEU_DA_NEN_TANG.md): Báo cáo kỹ thuật chi tiết bài thực hành 2 (Kiến trúc RLS, công thức toán học thuật toán gợi ý, phân tích responsive 4 kích thước màn hình, đánh giá rủi ro bảo mật).
+2. [HUONG_DAN_CHAY_TH2.md](docs/HUONG_DAN_CHAY_TH2.md): Cẩm nang hướng dẫn từng bước cấu hình tài nguyên Cloud (Supabase Migration, Edge Function, Firebase FCM VAPID Key).
+3. [KICH_BAN_QUAY_VIDEO_TH2.md](docs/KICH_BAN_QUAY_VIDEO_TH2.md): Kịch bản quay video minh chứng thực nghiệm thời lượng 8 - 12 phút (đầy đủ các bước demo phân quyền, mượn trả realtime giữa 2 tài khoản, bản đồ và gợi ý).
+4. [PHAN_TICH_TICH_HOP_CLOUD_DMS.md](docs/PHAN_TICH_TICH_HOP_CLOUD_DMS.md): Tài liệu phân tích kiến trúc tích hợp Cloud BaaS bài thực hành 1.
 
 ---
 
